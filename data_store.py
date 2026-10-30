@@ -22,12 +22,12 @@ def get_lake_grid(size=64, seed=7):
 
 def get_nodes(dump=False):
     nodes = [
-        {"name": "A", "ntu": 35, "bod": 30, "dist_m": 0},
-        {"name": "B", "ntu": 40, "bod": 35, "dist_m": 500},
-        {"name": "C", "ntu": 45, "bod": 40, "dist_m": 1000},
-        {"name": "D", "ntu": 50, "bod": 45, "dist_m": 1500},
+        {"name": "A", "ntu": 15, "bod": 12, "dist_m": 0},
+        {"name": "B", "ntu": 18, "bod": 15, "dist_m": 500},
+        {"name": "C", "ntu": 20, "bod": 16, "dist_m": 1000},
+        {"name": "D", "ntu": 22, "bod": 18, "dist_m": 1500, "flow_mld": 10},
     ]
     if dump:
         nodes[2].update(ntu=180, bod=140)
-        nodes[3].update(ntu=150, bod=115)
+        nodes[3].update(ntu=175, bod=136)
     return nodes

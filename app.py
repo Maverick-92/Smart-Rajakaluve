@@ -81,9 +81,9 @@ with tab2:
 # ---------------- Dot 3: Treat ----------------
 with tab3:
     c1, c2 = st.columns(2)
-    area = c1.slider("Wetland area (m²)", 500, 5000, 2000, 100)
+    area = c1.slider("Wetland area (m²)", 5000, 25000, 20000, 1000)
     flow = c2.slider("Inlet flow (MLD)", 1.0, 20.0, 10.0, 0.5)
-    inputs = {"turbidity": 180, "bod": 140, "nitrate": 12, "phosphate": 2.5}
+    inputs = {"turbidity": 180, "bod": 140, "nitrate": 38.0, "phosphate": 12.5}
     cols = st.columns(4)
     for col, (p, c_in) in zip(cols, inputs.items()):
         c_out, rem = treat(c_in, p, area, flow)
@@ -95,3 +95,4 @@ with tab3:
                "C_out = C* + (C_in - C*)·exp(-k/q), q = Q/A. "
                "k values are fitted to the C4 target removals and must be "
                "calibrated in the pilot.")
+
