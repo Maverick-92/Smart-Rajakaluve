@@ -1,0 +1,1527 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Rajakaluve · Command Centre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>/*__LEAFLET_CSS__*/</style>
+<style>
+:root{
+  --bg:#071a21; --panel:#0c2530; --panel2:#10303c; --line:#1d4452; --line2:#295868;
+  --ink:#e6f1f3; --ink2:#9fb9c0; --ink3:#6f8f98;
+  --teal:#19b3bf; --teal2:#0e7c86; --amber:#f2a516; --red:#e5484d; --purple:#a77bf3; --green:#3fbf6f; --blue:#4aa3ff;
+  --r:10px;
+  font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-size:13px}
+button{font:inherit;color:inherit;cursor:pointer}
+.mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace}
+#app{display:grid;grid-template-rows:56px 1fr 190px;grid-template-columns:270px 1fr 360px;grid-template-areas:"top top top" "left main right" "left bottom right";height:100vh;min-height:640px}
+/* top bar */
+#top{grid-area:top;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0b2731,#081e26)}
+.brand{display:flex;align-items:center;gap:10px;min-width:250px}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--teal2);display:grid;place-items:center}
+.brand h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.2px}
+.brand small{display:block;color:var(--ink3);font-size:11px;font-weight:400}
+.kpis{display:flex;gap:8px;flex:1;justify-content:center}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 12px;min-width:104px}
+.kpi b{font-size:17px;display:block;line-height:1.1}
+.kpi span{font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+.kpi.red b{color:var(--red)} .kpi.amber b{color:var(--amber)} .kpi.green b{color:var(--green)} .kpi.teal b{color:var(--teal)}
+.topright{display:flex;align-items:center;gap:10px}
+.badge{font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;letter-spacing:.5px}
+.badge.sim{background:#3a2d0b;color:var(--amber);border:1px solid #6b5313}
+.badge.live{background:#0b3a22;color:var(--green);border:1px solid #17603a}
+select,input[type=text],input[type=number]{background:var(--panel);border:1px solid var(--line2);color:var(--ink);border-radius:7px;padding:6px 8px;font:inherit}
+#clock{color:var(--ink2);font-size:12px;min-width:120px;text-align:right}
+/* panels */
+.panel{background:var(--panel);overflow:auto}
+#left{grid-area:left;border-right:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:14px}
+#right{grid-area:right;border-left:1px solid var(--line);display:flex;flex-direction:column}
+#main{grid-area:main;position:relative;display:flex;flex-direction:column;min-width:0}
+#bottom{grid-area:bottom;border-top:1px solid var(--line);display:flex;min-width:0}
+h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3);margin:0 0 8px;font-weight:600}
+.sec{border-bottom:1px solid var(--line);padding-bottom:12px}
+.sec:last-child{border-bottom:none}
+.toggle{display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;color:var(--ink2)}
+.toggle input{accent-color:var(--teal)}
+.swatch{width:10px;height:10px;border-radius:3px;display:inline-block}
+.sol{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.sol b{display:block;font-size:12.5px}
+.sol span{color:var(--ink3);font-size:11.5px}
+.sol.on{border-color:var(--teal);background:#0d3a44}
+.sol .tag{float:right;font-size:10px;padding:1px 6px;border-radius:10px;background:var(--line);color:var(--ink2)}
+.btnrow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:7px 8px;font-size:12px;text-align:center}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal2);border-color:var(--teal2);color:#fff}
+.btn.danger{border-color:#6b2427;color:#ffb3b5}
+.btn.warn{border-color:#6b5313;color:#ffd58a}
+.btn.small{padding:4px 8px;font-size:11.5px}
+.speed{display:flex;gap:4px;margin-top:6px}
+.speed button{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 0;font-size:11.5px}
+.speed button.on{border-color:var(--teal);color:var(--teal)}
+/* tabs */
+.tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid var(--line);background:var(--panel)}
+.tab{background:none;border:none;padding:8px 14px;color:var(--ink3);border-bottom:2px solid transparent;font-weight:500}
+.tab.on{color:var(--ink);border-bottom-color:var(--teal)}
+.tabs .spacer{flex:1}
+.view{position:absolute;inset:41px 0 0 0;display:none}
+.view.on{display:block}
+#map{position:absolute;inset:0;background:#0a1f27}
+#three{position:absolute;inset:0}
+.leaflet-container{background:#0a1f27;font-family:inherit}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel2);color:var(--ink);border:1px solid var(--line2)}
+.leaflet-popup-content{margin:10px 12px;font-size:12.5px}
+.leaflet-control-attribution{background:rgba(7,26,33,.8)!important;color:var(--ink3)!important}
+.leaflet-control-attribution a{color:var(--ink2)!important}
+.leaflet-bar a{background:var(--panel2)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.maplabel{color:var(--ink2);font-size:11px;font-weight:500;white-space:nowrap;text-shadow:0 0 3px #000,0 0 6px #000}
+.maplabel.lake{color:#8fd3ff;font-style:italic}
+.maplabel.zone{color:#cfe3e7;font-size:11.5px;font-weight:600}
+.nodeicon{width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(0,0,0,.35)}
+.nodeicon.pulse{animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,72,77,.8)}100%{box-shadow:0 0 0 14px rgba(229,72,77,0)}}
+.legend{position:absolute;left:12px;bottom:12px;z-index:500;background:rgba(12,37,48,.94);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:11.5px;color:var(--ink2);max-width:260px}
+.legend .row{display:flex;align-items:center;gap:6px;margin:2px 0}
+.legend .ramp{height:8px;border-radius:4px;margin:4px 0 2px}
+.basemap{position:absolute;right:12px;top:12px;z-index:500;display:flex;background:rgba(12,37,48,.94);border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.basemap button{background:none;border:none;padding:6px 10px;font-size:11.5px;color:var(--ink2)}
+.basemap button.on{background:var(--teal2);color:#fff}
+.basemap button:disabled{opacity:.4;cursor:not-allowed}
+.mapnote{position:absolute;right:12px;top:50px;z-index:500;background:rgba(58,45,11,.92);border:1px solid #6b5313;color:#ffd58a;border-radius:8px;padding:6px 10px;font-size:11px;max-width:300px}
+.overlaycard{position:absolute;left:12px;top:12px;z-index:500;background:rgba(12,37,48,.94);border:1px solid var(--line2);border-radius:8px;padding:10px 12px;width:290px}
+.overlaycard h4{margin:0 0 6px;font-size:12.5px}
+/* right panel */
+.rtabs{display:flex;border-bottom:1px solid var(--line)}
+.rtabs button{flex:1;background:none;border:none;padding:10px 4px;color:var(--ink3);font-size:12px;font-weight:500;border-bottom:2px solid transparent}
+.rtabs button.on{color:var(--ink);border-bottom-color:var(--teal)}
+.rview{display:none;padding:12px;overflow:auto;flex:1}
+.rview.on{display:block}
+.deptbar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.chip{border:1px solid var(--line2);background:var(--panel2);border-radius:14px;padding:3px 9px;font-size:11.5px;color:var(--ink2)}
+.chip.on{border-color:var(--teal);color:#fff;background:#0d3a44}
+.alert{border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin-bottom:8px;background:var(--panel2);cursor:pointer}
+.alert:hover{border-color:var(--line2)}
+.alert.sel{border-color:var(--teal)}
+.alert .hd{display:flex;align-items:center;gap:6px}
+.alert .sev{width:8px;height:8px;border-radius:50%}
+.alert .tt{font-weight:600;font-size:12.5px;flex:1}
+.alert .st{font-size:10.5px;padding:1px 7px;border-radius:10px;border:1px solid var(--line2);color:var(--ink2);white-space:nowrap}
+.alert .st.NEW{color:#ffb3b5;border-color:#6b2427}
+.alert .st.RESOLVED{color:#9be3b6;border-color:#17603a}
+.alert .meta{color:var(--ink3);font-size:11.5px;margin:4px 0 0}
+.alert .depts{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.dtag{font-size:10.5px;padding:1px 6px;border-radius:4px;font-weight:600}
+.actions{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.steps{display:flex;gap:3px;margin-top:8px}
+.steps i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.steps i.done{background:var(--teal)}
+.empty{color:var(--ink3);text-align:center;padding:24px 8px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12.5px}
+.kv span{color:var(--ink3)}
+.read{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.read div{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+.read b{display:block;font-size:15px}
+.read span{color:var(--ink3);font-size:10.5px}
+.wx{border:1px solid var(--line);border-radius:9px;background:var(--panel2);padding:10px;margin-bottom:8px}
+.wx .big{display:flex;align-items:center;gap:10px}
+.wx .big b{font-size:28px;font-weight:600}
+.wxrow{display:grid;grid-template-columns:1.4fr .7fr .7fr .8fr .8fr;gap:4px;padding:6px 4px;border-bottom:1px solid var(--line);font-size:12px;align-items:center;cursor:pointer}
+.wxrow.hd{color:var(--ink3);font-size:10.5px;text-transform:uppercase;cursor:default}
+.wxrow:hover:not(.hd){background:var(--panel2)}
+.risk{font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:4px;text-align:center}
+.hourly{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
+.hourly div{min-width:44px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 2px;font-size:11px}
+.hourly b{display:block;font-size:12px}
+.note{color:var(--ink3);font-size:11px;line-height:1.45}
+.warnnote{background:#3a2d0b;border:1px solid #6b5313;color:#ffd58a;border-radius:7px;padding:6px 8px;font-size:11px;margin-bottom:8px}
+/* bottom */
+#log{flex:1.4;overflow:auto;padding:10px 14px;border-right:1px solid var(--line)}
+#deptsum{flex:1;overflow:auto;padding:10px 14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-content:start}
+.logrow{display:grid;grid-template-columns:70px 64px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid #12323d;font-size:12px}
+.logrow time{color:var(--ink3)}
+.dcard{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--panel2);cursor:pointer}
+.dcard:hover{border-color:var(--line2)}
+.dcard .n{display:flex;justify-content:space-between;align-items:center}
+.dcard .n b{font-size:12.5px}
+.dcard .stats{display:flex;gap:12px;margin-top:5px;font-size:11.5px;color:var(--ink3)}
+.dcard .stats b{color:var(--ink);font-size:13px}
+/* trends */
+#trends{padding:14px;overflow:auto;height:100%}
+.chartcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin-bottom:12px}
+.chartcard canvas{width:100%;height:170px;display:block}
+.threehud{position:absolute;left:12px;top:12px;background:rgba(12,37,48,.94);border:1px solid var(--line2);border-radius:8px;padding:10px 12px;z-index:5;width:300px}
+.threehud select{width:100%;margin:6px 0}
+.threekey{position:absolute;right:12px;bottom:12px;background:rgba(12,37,48,.94);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;z-index:5;font-size:11.5px;color:var(--ink2)}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:2000}
+.modal.on{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--line2);border-radius:12px;max-width:760px;width:92%;max-height:86vh;overflow:auto;padding:20px 22px}
+.modal h2{margin:0 0 6px;font-size:18px}
+.modal h4{margin:16px 0 6px;font-size:13px;color:var(--teal)}
+.modal p,.modal li{color:var(--ink2);line-height:1.5}
+.modal table{width:100%;border-collapse:collapse;font-size:12.5px}
+.modal td,.modal th{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top}
+.modal th{color:var(--ink3);font-weight:500}
+.toast{position:fixed;right:380px;bottom:205px;z-index:3000;display:flex;flex-direction:column;gap:6px}
+.toast div{background:var(--panel2);border:1px solid var(--line2);border-left:none;border-radius:8px;padding:8px 12px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:340px;animation:tin .25s}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}to{opacity:1}}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+@media (max-width:1180px){#app{grid-template-columns:230px 1fr 320px}.kpis .kpi:nth-child(n+5){display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="brand">
+      <div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 15c3-3 6 3 9 0s6 3 9 0"/><path d="M3 9c3-3 6 3 9 0s6 3 9 0" opacity=".6"/></svg></div>
+      <div><h1>Smart Rajakaluve</h1><small>Drain &amp; lake command centre · Bengaluru</small></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="topright">
+      <span id="modeBadge" class="badge sim">SIMULATION</span>
+      <button class="btn small" id="btnAbout">How it works</button>
+      <button class="btn small" id="btnSettings">Data sources</button>
+      <div id="clock" class="mono"></div>
+    </div>
+  </header>
+
+  <aside id="left" class="panel">
+    <div class="sec">
+      <h3>View as department</h3>
+      <select id="deptSel" style="width:100%"></select>
+      <p class="note" style="margin:6px 0 0">Filters alerts, actions and highlights to one agency's work.</p>
+    </div>
+    <div class="sec">
+      <h3>Solution to show</h3>
+      <div id="sols"></div>
+    </div>
+    <div class="sec">
+      <h3>Map layers</h3>
+      <div id="layers"></div>
+    </div>
+    <div class="sec">
+      <h3>Scenario controls (demo)</h3>
+      <select id="scDrain" style="width:100%;margin-bottom:6px"></select>
+      <div class="btnrow">
+        <button class="btn danger" id="scBlock">Block a stretch</button>
+        <button class="btn warn" id="scDump">Illegal dumping</button>
+        <button class="btn" id="scSewage">Sewage leak</button>
+        <button class="btn" id="scRain">Heavy rain</button>
+        <button class="btn" id="scFault">Sensor fault</button>
+        <button class="btn" id="scPass">Satellite pass</button>
+      </div>
+      <button class="btn" id="scReset" style="width:100%;margin-top:6px">Reset all scenarios</button>
+      <div class="speed" id="speed"></div>
+      <p class="note" style="margin:6px 0 0">1 second of real time = <span id="speedTxt">1</span> simulated minute(s).</p>
+    </div>
+  </aside>
+
+  <main id="main">
+    <nav class="tabs">
+      <button class="tab on" data-v="vMap">City map</button>
+      <button class="tab" data-v="v3d">3D drain simulation</button>
+      <button class="tab" data-v="vTrend">Sensor trends</button>
+      <span class="spacer"></span>
+    </nav>
+    <section id="vMap" class="view on">
+      <div id="map"></div>
+      <div class="basemap" id="basemap">
+        <button data-b="schematic" class="on">Schematic</button>
+        <button data-b="street">Street</button>
+        <button data-b="sentinel">Sentinel-2</button>
+      </div>
+      <div class="mapnote" id="mapnote" style="display:none"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <section id="v3d" class="view">
+      <div id="three"></div>
+      <div class="threehud">
+        <b>3D model of one drain</b>
+        <select id="threeDrain"></select>
+        <div class="note" id="threeInfo"></div>
+      </div>
+      <div class="threekey">Drag to orbit · scroll to zoom · right-drag to pan</div>
+    </section>
+    <section id="vTrend" class="view"><div id="trends"></div></section>
+  </main>
+
+  <aside id="right" class="panel">
+    <div class="rtabs">
+      <button class="on" data-r="rAlerts">Alerts &amp; actions</button>
+      <button data-r="rDetail">Selected</button>
+      <button data-r="rSky">Sky view</button>
+      <button data-r="rWx">Weather</button>
+    </div>
+    <div id="rAlerts" class="rview on"></div>
+    <div id="rDetail" class="rview"></div>
+    <div id="rSky" class="rview"></div>
+    <div id="rWx" class="rview"></div>
+  </aside>
+
+  <section id="bottom" class="panel">
+    <div id="log"></div>
+    <div id="deptsum"></div>
+  </section>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>/*__LEAFLET_JS__*/</script>
+<script>/*__THREE_JS__*/</script>
+<script>/*__ORBIT_JS__*/</script>
+<script>
+'use strict';
+/* =====================================================================
+   Smart Rajakaluve command centre
+   - Same detection logic for simulated and live sensor data
+   - LIVE mode: page served by the backend (/api/state) or API URL set in Data sources
+   ===================================================================== */
+
+// ---------- Safe storage ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('srk_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('srk_' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+// ---------- Departments ----------
+const DEPTS = {
+  GBA:   { name: 'GBA / city corporations', short: 'GBA', color: '#19b3bf', role: 'Roads and stormwater drains' },
+  BWSSB: { name: 'BWSSB', short: 'BWSSB', color: '#f2a516', role: 'Sewer lines and treatment plants' },
+  KSPCB: { name: 'KSPCB', short: 'KSPCB', color: '#e5484d', role: 'Pollution control and enforcement' },
+  KTCDA: { name: 'KTCDA', short: 'KTCDA', color: '#3fbf6f', role: 'Lake custodian, inlet treatment units' },
+  OPS:   { name: 'System operations', short: 'OPS', color: '#a77bf3', role: 'Sensor network upkeep' },
+};
+
+// ---------- Geography (schematic, not surveyed) ----------
+const BELLANDUR = [[12.9445,77.6430],[12.9462,77.6500],[12.9445,77.6580],[12.9422,77.6660],[12.9385,77.6740],[12.9335,77.6800],[12.9292,77.6792],[12.9282,77.6722],[12.9310,77.6642],[12.9330,77.6562],[12.9332,77.6492],[12.9360,77.6442],[12.9400,77.6420]];
+const LAKES = [
+  { id: 'bellandur', name: 'Bellandur Lake', poly: BELLANDUR, sky: true },
+  { id: 'varthur', name: 'Varthur Lake', poly: [[12.9500,77.7380],[12.9490,77.7450],[12.9440,77.7500],[12.9385,77.7495],[12.9370,77.7440],[12.9410,77.7390],[12.9460,77.7365]], sky: true },
+  { id: 'agara', name: 'Agara Lake', circle: [12.9228, 77.6395, 380] },
+  { id: 'iblur', name: 'Iblur Lake', circle: [12.9180, 77.6620, 220] },
+  { id: 'hebbal', name: 'Hebbal Lake', circle: [13.0455, 77.5905, 480], sky: true },
+  { id: 'ulsoor', name: 'Ulsoor Lake', circle: [12.9830, 77.6200, 380] },
+  { id: 'madiwala', name: 'Madiwala Lake', circle: [12.9085, 77.6160, 450] },
+  { id: 'sankey', name: 'Sankey Tank', circle: [13.0100, 77.5740, 220] },
+  { id: 'kr_puram', name: 'Vengaiahnakere', circle: [13.0060, 77.6930, 300] },
+];
+const VALLEYS = [
+  { name: 'Hebbal valley', color: '#4aa3ff', poly: [[13.10,77.52],[13.11,77.66],[13.03,77.72],[12.99,77.66],[12.995,77.58],[13.02,77.52]] },
+  { name: 'Koramangala–Challaghatta valley', color: '#19b3bf', poly: [[12.995,77.58],[12.99,77.66],[13.03,77.72],[12.97,77.80],[12.88,77.74],[12.86,77.64],[12.92,77.59]] },
+  { name: 'Vrishabhavathi valley', color: '#a77bf3', poly: [[13.02,77.52],[12.995,77.58],[12.92,77.59],[12.86,77.64],[12.84,77.52],[12.90,77.44],[12.99,77.45]] },
+];
+const ORR = [[13.0358,77.5970],[13.0450,77.6250],[13.0300,77.6600],[13.0070,77.6950],[12.9760,77.7000],[12.9560,77.7010],[12.9270,77.6800],[12.9200,77.6600],[12.9170,77.6238],[12.9150,77.5900],[12.9180,77.5600],[12.9300,77.5350],[12.9600,77.5080],[12.9900,77.5100],[13.0250,77.5250],[13.0400,77.5550],[13.0358,77.5970]];
+const GBA_BOUNDARY = [[13.135,77.48],[13.14,77.60],[13.10,77.70],[13.03,77.78],[12.95,77.80],[12.86,77.74],[12.82,77.62],[12.84,77.50],[12.90,77.43],[13.00,77.41],[13.08,77.43]];
+
+// Monitored drains: nodes upstream -> downstream. Last node sits after the inlet treatment unit.
+const DRAINS = [
+  { id: 'KV', name: 'Koramangala Valley drain', inlet: 'Koramangala inlet (NW)', zone: 'koramangala', cap: 160,
+    path: [[12.9530,77.6120],[12.9500,77.6160],[12.9465,77.6200],[12.9430,77.6245],[12.9395,77.6290],[12.9380,77.6340],[12.9385,77.6385],[12.9400,77.6410],[12.9410,77.6424]],
+    nodes: [['KV-1',12.9530,77.6120],['KV-2',12.9465,77.6200],['KV-3',12.9395,77.6290],['KV-4',12.9385,77.6385],['KV-T',12.9410,77.6424]] },
+  { id: 'AG', name: 'Agara–HSR drain', inlet: 'Agaram inlet (SW)', zone: 'hsr', cap: 140,
+    path: [[12.9150,77.6330],[12.9180,77.6355],[12.9200,77.6375],[12.9230,77.6400],[12.9255,77.6420],[12.9300,77.6440],[12.9338,77.6462]],
+    nodes: [['AG-1',12.9150,77.6330],['AG-2',12.9200,77.6375],['AG-3',12.9255,77.6420],['AG-T',12.9338,77.6462]] },
+  { id: 'IB', name: 'Iblur drain', inlet: 'Iblur inlet (S)', zone: 'bellandur', cap: 130,
+    path: [[12.9120,77.6600],[12.9150,77.6615],[12.9180,77.6635],[12.9210,77.6650],[12.9240,77.6665],[12.9265,77.6685],[12.9286,77.6705]],
+    nodes: [['IB-1',12.9120,77.6600],['IB-2',12.9180,77.6635],['IB-3',12.9240,77.6665],['IB-T',12.9286,77.6705]] },
+  { id: 'CH', name: 'Challaghatta drain', inlet: 'Challaghatta inlet (N)', zone: 'koramangala', cap: 140,
+    path: [[12.9620,77.6420],[12.9590,77.6440],[12.9560,77.6460],[12.9530,77.6480],[12.9500,77.6500],[12.9475,77.6510],[12.9455,77.6516]],
+    nodes: [['CH-1',12.9620,77.6420],['CH-2',12.9560,77.6460],['CH-3',12.9500,77.6500],['CH-T',12.9455,77.6516]] },
+];
+
+// Areas watched for weather and flood risk
+const ZONES = [
+  { id: 'koramangala', name: 'Koramangala', ll: [12.9352, 77.6245], drains: ['KV', 'CH'], low: 0.8 },
+  { id: 'hsr', name: 'HSR Layout', ll: [12.9116, 77.6474], drains: ['AG'], low: 0.7 },
+  { id: 'bellandur', name: 'Bellandur', ll: [12.9260, 77.6762], drains: ['IB'], low: 0.9 },
+  { id: 'silkboard', name: 'Silk Board', ll: [12.9177, 77.6238], drains: ['AG', 'KV'], low: 0.85 },
+  { id: 'mahadevapura', name: 'Mahadevapura', ll: [12.9916, 77.7068], drains: [], low: 0.75 },
+  { id: 'varthur', name: 'Varthur', ll: [12.9406, 77.7470], drains: [], low: 0.7 },
+  { id: 'hebbal', name: 'Hebbal', ll: [13.0358, 77.5970], drains: [], low: 0.5 },
+  { id: 'central', name: 'Central (Majestic)', ll: [12.9767, 77.5713], drains: [], low: 0.3 },
+];
+
+// Solutions
+const SOLUTIONS = {
+  A: { name: 'Detect · Locate · Treat', tag: 'Core', desc: 'Sensors find the fault; biofilter at each lake inlet treats inflow.' },
+  B: { name: 'Sponge zones upstream', tag: 'Flood', desc: 'Bioswales and rain gardens hold rain before blocked chokepoints.' },
+  C: { name: 'Virtual lakes', tag: 'Roadmap', desc: 'Upstream tanks hold or release water based on drain status.' },
+};
+const SPONGES = [
+  { drain: 'KV', ll: [12.9500, 77.6140], r: 260, name: 'Viveknagar rain garden' },
+  { drain: 'KV', ll: [12.9420, 77.6235], r: 230, name: 'Ejipura roadside bioswale' },
+  { drain: 'AG', ll: [12.9165, 77.6310], r: 230, name: 'HSR sector bioswale' },
+  { drain: 'IB', ll: [12.9140, 77.6580], r: 220, name: 'Iblur detention sponge' },
+  { drain: 'CH', ll: [12.9600, 77.6395], r: 230, name: 'Domlur rain garden' },
+];
+const VLAKES = [
+  { drain: 'KV', ll: [12.9555, 77.6080], name: 'Virtual lake V1 (stormwater tank)' },
+  { drain: 'AG', ll: [12.9120, 77.6300], name: 'Virtual lake V2 (Agara overflow tank)' },
+  { drain: 'CH', ll: [12.9650, 77.6400], name: 'Virtual lake V3 (Challaghatta tank)' },
+];
+
+// ---------- State ----------
+const S = {
+  t: Date.now(),             // simulated clock (ms)
+  tick: 0,
+  speed: store.get('speed', 1),
+  solution: store.get('solution', 'A'),
+  dept: store.get('dept', 'ALL'),
+  live: false, apiBase: store.get('api', ''),
+  nodes: {},                  // id -> node
+  drains: {},                 // id -> drain runtime
+  alerts: [],                 // alert objects
+  log: [],
+  selected: null,             // {kind:'node'|'stretch'|'zone'|'lake'|'alert', id}
+  rain: 0, rainEff: 0, scenarioRain: 0,
+  weather: null, wxLive: false,
+  sky: null,
+  tilesOK: false,
+  hist: {},                   // node id -> array of readings
+};
+
+function rnd(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const R = rnd(42);
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const fmt = (x, d = 0) => (x == null || isNaN(x)) ? '–' : Number(x).toFixed(d);
+const hhmm = (t) => new Date(t).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// Build runtime nodes
+DRAINS.forEach(d => {
+  const n = d.nodes.length;
+  S.drains[d.id] = { ...d, blocks: {}, dumps: {}, sewage: {}, treatEff: 0.68, treatHealth: 1 };
+  d.nodes.forEach((nd, i) => {
+    const id = nd[0];
+    S.nodes[id] = {
+      id, drain: d.id, idx: i, ll: [nd[1], nd[2]], last: i === n - 1,
+      level: 0, turb: 0, tds: 0, ph: 7.2, temp: 27, batt: 92 - i * 3, rssi: -70 - i * 4,
+      source: 'SIM', fault: false, stuck: null, updated: 0, prevTurb: [],
+    };
+    S.hist[id] = [];
+  });
+});
+
+// ---------- Simulation model ----------
+function simStep() {
+  // rain: scenario rain decays; weather rain from current weather
+  const wxRain = S.weather ? (S.weather.zones[0]?.rain || 0) : 0;
+  S.scenarioRain *= 0.985;
+  if (S.scenarioRain < 0.2) S.scenarioRain = 0;
+  S.rain = Math.max(wxRain, S.scenarioRain);
+  const sponge = S.solution === 'B' ? 0.42 : 0;      // fraction of runoff held
+  const vlake = S.solution === 'C' ? 0.30 : 0;
+  // smoothed effective rain (sponges also delay)
+  const alpha = S.solution === 'B' ? 0.05 : 0.15;
+  S.rainEff += alpha * (S.rain * (1 - sponge) * (1 - vlake) - S.rainEff);
+  const hour = new Date(S.t).getUTCHours() + 5.5;
+  const diurnal = 1 + 0.25 * Math.sin(((hour - 7) / 24) * 2 * Math.PI); // sewage peaks morning/evening-ish
+
+  Object.values(S.drains).forEach(d => {
+    const n = d.nodes.length;
+    // block severity grows
+    Object.keys(d.blocks).forEach(k => { d.blocks[k] = Math.min(1, d.blocks[k] + 0.04); });
+    // treatment unit clogs slowly with load
+    if (S.solution === 'A') d.treatHealth = Math.max(0.35, d.treatHealth - 0.0004);
+    let carryTurb = 0, carryTds = 0, carryPh = 0;
+    for (let i = 0; i < n; i++) {
+      const node = S.nodes[d.nodes[i][0]];
+      if (node.source === 'LIVE') { continue; }
+      if (node.stuck) { node.updated = S.t; continue; }
+      const base = (18 + 7 * i) * diurnal;
+      const runoff = S.rainEff * (1.1 + 0.35 * i);
+      let level = base + runoff;
+      // blockages: stretch k is between node k and k+1
+      Object.entries(d.blocks).forEach(([k, sev]) => {
+        k = +k;
+        if (i <= k) level += sev * (55 + runoff * 0.9) * Math.pow(0.55, k - i);
+        else level *= (1 - 0.65 * sev);
+      });
+      level = clamp(level + gauss() * 1.2, 2, d.cap);
+      // water quality: sewage-laden drains are already dirty
+      let turb = 38 + 4 * i + S.rainEff * 3.2;
+      let tds = 640 + 15 * i - S.rainEff * 8;
+      let ph = 7.3;
+      // dumping/sewage enters between node k and k+1 -> appears from node k+1 downstream
+      Object.entries(d.dumps).forEach(([k, v]) => { k = +k; if (i === k + 1) { carryTurb += 160; carryTds += 520; carryPh += v.industrial ? -1.9 : 0; } });
+      Object.entries(d.sewage).forEach(([k]) => { k = +k; if (i === k + 1) { carryTurb += 90; carryTds += 420; carryPh += -0.2; } });
+      turb += carryTurb; tds += carryTds; ph += carryPh;
+      carryTurb *= 0.9; carryTds *= 0.92; carryPh *= 0.92;
+      // treatment unit before the last node
+      if (node.last && S.solution === 'A') {
+        const eff = d.treatEff * d.treatHealth;
+        const prev = S.nodes[d.nodes[i - 1][0]];
+        turb = prev.turb * (1 - eff) + 4;
+        tds = prev.tds * (1 - eff * 0.25);
+        ph = 7.2 + (prev.ph - 7.2) * 0.5;
+      } else if (node.last) {
+        const prev = S.nodes[d.nodes[i - 1][0]];
+        turb = prev.turb * 0.97; tds = prev.tds; ph = prev.ph;
+      }
+      node.level = level;
+      node.turb = clamp(turb + gauss() * 2.5, 1, 1000);
+      node.tds = clamp(tds + gauss() * 10, 50, 3000);
+      node.ph = clamp(ph + gauss() * 0.05, 3, 11);
+      node.temp = 26.5 + 1.5 * Math.sin(((hour - 9) / 24) * 2 * Math.PI) + gauss() * 0.1;
+      node.batt = clamp(node.batt - 0.002 + (hour > 9 && hour < 17 ? 0.004 : 0), 20, 100);
+      node.updated = S.t;
+    }
+  });
+}
+
+// ---------- Detection engine (same rules used by the backend) ----------
+const RULES = {
+  blockRatio: 0.55, blockMinLevel: 55,
+  overflowFrac: 0.85,
+  turbJump: 70, tdsJump: 300, phLow: 6.0, phHigh: 9.0,
+  treatMin: 0.40, persist: 2, stuckTicks: 6,
+};
+const pending = {}; // key -> consecutive count
+function detect() {
+  const found = [];
+  Object.values(S.drains).forEach(d => {
+    const ids = d.nodes.map(x => x[0]);
+    const N = ids.map(id => S.nodes[id]);
+    for (let i = 0; i < N.length; i++) {
+      const a = N[i];
+      // sensor health: flat readings
+      const h = S.hist[a.id];
+      if (h.length >= RULES.stuckTicks) {
+        const lastK = h.slice(-RULES.stuckTicks);
+        const flat = lastK.every(r => r.level === lastK[0].level && r.turb === lastK[0].turb);
+        if (flat) found.push({ type: 'SENSOR', drain: d.id, a: i, b: i, sev: 1, dept: ['OPS'], val: { level: a.level } });
+      }
+      if (a.level > RULES.overflowFrac * d.cap) found.push({ type: 'OVERFLOW', drain: d.id, a: i, b: i, sev: 3, dept: ['GBA'], val: { level: a.level, cap: d.cap } });
+      if (i === N.length - 1) continue;
+      const b = N[i + 1];
+      const lastPair = b.last; // stretch through the treatment unit
+      // blockage: high upstream, abnormally low downstream
+      if (!lastPair && a.level > RULES.blockMinLevel && b.level / a.level < RULES.blockRatio) {
+        found.push({ type: 'BLOCKAGE', drain: d.id, a: i, b: i + 1, sev: a.level > 0.7 * d.cap ? 3 : 2, dept: ['GBA'], val: { up: a.level, down: b.level } });
+      }
+      // pollution jump between neighbours
+      if (!lastPair) {
+        const dT = b.turb - a.turb, dS = b.tds - a.tds;
+        if (dT > RULES.turbJump || dS > RULES.tdsJump) {
+          const industrial = b.ph < RULES.phLow || b.ph > RULES.phHigh;
+          if (industrial) found.push({ type: 'DISCHARGE', drain: d.id, a: i, b: i + 1, sev: 3, dept: ['KSPCB'], val: { dT, dS, ph: b.ph } });
+          else found.push({ type: 'SEWAGE', drain: d.id, a: i, b: i + 1, sev: 2, dept: ['BWSSB', 'KSPCB'], val: { dT, dS, ph: b.ph } });
+        }
+      } else if (S.solution === 'A') {
+        const eff = (a.turb - b.turb) / Math.max(1, a.turb);
+        if (eff < RULES.treatMin) found.push({ type: 'TREATMENT', drain: d.id, a: i, b: i + 1, sev: 1, dept: ['KTCDA'], val: { eff } });
+      }
+    }
+  });
+  // persistence filter
+  const seen = new Set();
+  found.forEach(f => {
+    const key = `${f.type}:${f.drain}:${f.a}-${f.b}`;
+    seen.add(key);
+    pending[key] = (pending[key] || 0) + 1;
+    if (pending[key] >= RULES.persist) raiseAlert(key, f);
+  });
+  Object.keys(pending).forEach(k => { if (!seen.has(k)) delete pending[k]; });
+  // mark alerts whose condition cleared
+  S.alerts.forEach(al => {
+    if (al.status === 'RESOLVED') return;
+    const active = seen.has(al.key);
+    if (!active && !al.cleared) { al.cleared = S.t; addLog(al.dept[0], `Condition cleared on ${stretchName(al)} (${TYPE[al.type].title}); awaiting closure`, al.id); }
+    if (active) al.cleared = null;
+  });
+}
+
+const TYPE = {
+  BLOCKAGE: { title: 'Blockage suspected', color: '#e5484d', steps: [
+    { label: 'Acknowledge', log: 'acknowledged blockage alert' },
+    { label: 'Dispatch desilting crew', log: 'dispatched desilting crew' },
+    { label: 'Crew on site', log: 'crew reported on site' },
+    { label: 'Mark cleared', log: 'cleared the blockage', effect: 'unblock' }] },
+  OVERFLOW: { title: 'Overflow risk', color: '#e5484d', steps: [
+    { label: 'Acknowledge', log: 'acknowledged overflow risk' },
+    { label: 'Deploy pumps & barricades', log: 'deployed pumps and barricades' },
+    { label: 'Close', log: 'closed overflow alert' }] },
+  DISCHARGE: { title: 'Industrial discharge', color: '#a77bf3', steps: [
+    { label: 'Acknowledge', log: 'acknowledged discharge alert' },
+    { label: 'Send inspection team', log: 'sent inspection team' },
+    { label: 'Issue closure notice', log: 'issued closure notice to the outlet' },
+    { label: 'Outlet closed', log: 'confirmed outlet closed', effect: 'undump' }] },
+  SEWAGE: { title: 'Sewage entering drain', color: '#f2a516', steps: [
+    { label: 'Acknowledge', log: 'acknowledged sewage ingress' },
+    { label: 'Inspect sewer line', log: 'started sewer line inspection' },
+    { label: 'Repair / divert to STP', log: 'repaired the line and diverted flow to STP', effect: 'unsewage' },
+    { label: 'Close', log: 'closed sewage alert' }] },
+  TREATMENT: { title: 'Inlet treatment underperforming', color: '#3fbf6f', steps: [
+    { label: 'Acknowledge', log: 'acknowledged treatment alert' },
+    { label: 'Schedule media cleaning', log: 'scheduled filter media cleaning' },
+    { label: 'Media cleaned', log: 'cleaned the filter media', effect: 'retreat' }] },
+  SENSOR: { title: 'Sensor not reporting changes', color: '#a77bf3', steps: [
+    { label: 'Acknowledge', log: 'acknowledged sensor fault' },
+    { label: 'Field check', log: 'started field check' },
+    { label: 'Sensor fixed', log: 'fixed and recalibrated the sensor', effect: 'unfault' }] },
+  SKY: { title: 'Satellite turbidity hotspot', color: '#4aa3ff', steps: [
+    { label: 'Acknowledge', log: 'acknowledged satellite hotspot' },
+    { label: 'Check inlet nodes', log: 'checked ground nodes at the inlet' },
+    { label: 'Close', log: 'closed satellite hotspot' }] },
+};
+
+let alertSeq = 1;
+function stretchName(al) {
+  const d = S.drains[al.drain];
+  if (!d) return al.drain;
+  if (al.a === al.b) return `${d.nodes[al.a][0]} (${d.name})`;
+  return `${d.nodes[al.a][0]} → ${d.nodes[al.b][0]} (${d.name})`;
+}
+function raiseAlert(key, f) {
+  const open = S.alerts.find(a => a.key === key && a.status !== 'RESOLVED');
+  if (open) { open.val = f.val; open.lastSeen = S.t; return; }
+  const al = { id: 'A' + String(alertSeq++).padStart(3, '0'), key, ...f, status: 'NEW', step: 0, created: S.t, lastSeen: S.t, history: [], cleared: null };
+  S.alerts.unshift(al);
+  addLog(al.dept[0], `New alert: ${TYPE[al.type].title} at ${stretchName(al)}`, al.id, true);
+  toast(`<b style="color:${TYPE[al.type].color}">${TYPE[al.type].title}</b><br>${esc(stretchName(al))}<br><span class="note">Routed to ${al.dept.join(' + ')}</span>`);
+}
+function actOn(al, deptOverride) {
+  const steps = TYPE[al.type].steps;
+  if (al.step >= steps.length) return;
+  const st = steps[al.step];
+  const who = deptOverride || (S.dept !== 'ALL' && al.dept.includes(S.dept) ? S.dept : al.dept[0]);
+  al.history.push({ t: S.t, dept: who, label: st.label });
+  al.step++;
+  al.status = al.step >= steps.length ? 'RESOLVED' : (al.step === 1 ? 'ACKNOWLEDGED' : 'IN PROGRESS');
+  if (al.step === 1) al.ackAt = S.t;
+  if (al.status === 'RESOLVED') al.resolvedAt = S.t;
+  applyEffect(al, st.effect);
+  addLog(who, `${DEPTS[who].short} ${st.log} · ${stretchName(al)}`, al.id);
+  if (S.live) postAction(al, st);
+  renderAll();
+}
+function applyEffect(al, eff) {
+  const d = S.drains[al.drain];
+  if (!d || !eff) return;
+  if (eff === 'unblock') delete d.blocks[al.a];
+  if (eff === 'undump') delete d.dumps[al.a];
+  if (eff === 'unsewage') delete d.sewage[al.a];
+  if (eff === 'retreat') d.treatHealth = 1;
+  if (eff === 'unfault') { const n = S.nodes[d.nodes[al.a][0]]; n.stuck = null; }
+}
+
+function addLog(dept, text, alertId, isNew) {
+  S.log.unshift({ t: S.t, dept, text, alertId, isNew });
+  if (S.log.length > 300) S.log.pop();
+}
+
+// ---------- Flood risk per zone ----------
+function zoneRisk(z) {
+  let lvl = 0, block = 0;
+  z.drains.forEach(id => {
+    const d = S.drains[id];
+    d.nodes.forEach(n => { lvl = Math.max(lvl, S.nodes[n[0]].level / d.cap); });
+    if (Object.keys(d.blocks).length) block = 1;
+  });
+  const wz = S.weather?.zones.find(w => w.id === z.id);
+  const rainNow = Math.max(wz ? wz.rain : 0, S.scenarioRain);
+  const rain6 = wz ? wz.rain6 : 0;
+  const score = 100 * clamp(0.35 * lvl + 0.25 * clamp(rainNow / 20, 0, 1) + 0.2 * clamp(rain6 / 40, 0, 1) + 0.12 * block + 0.08 * z.low, 0, 1);
+  return Math.round(score);
+}
+function riskBand(s) { return s >= 60 ? ['High', '#e5484d'] : s >= 35 ? ['Watch', '#f2a516'] : ['Low', '#3fbf6f']; }
+
+// ---------- Sentinel-2 sky view (simulated pass from inlet loads; live mode loads backend NDTI) ----------
+function pointInPoly(p, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [yi, xi] = poly[i], [yj, xj] = poly[j];
+    if (((xi > p[1]) !== (xj > p[1])) && (p[0] < (yj - yi) * (p[1] - xi) / (xj - xi) + yi)) inside = !inside;
+  }
+  return inside;
+}
+function satellitePass(manual) {
+  const cloud = S.weather ? S.weather.zones.find(z => z.id === 'bellandur')?.cloud ?? 50 : 50;
+  const usable = cloud < 70;
+  const inlets = DRAINS.map(d => { const last = d.nodes[d.nodes.length - 1]; return { drain: d.id, ll: [last[1], last[2]], load: S.nodes[last[0]].turb }; });
+  const cells = [];
+  const step = 0.0012;
+  for (let la = 12.927; la < 12.947; la += step) for (let lo = 77.641; lo < 77.681; lo += step) {
+    const c = [la + step / 2, lo + step / 2];
+    if (!pointInPoly(c, BELLANDUR)) continue;
+    let v = -0.08 + (R() - 0.5) * 0.03;
+    inlets.forEach(inl => {
+      const dkm = Math.hypot((c[0] - inl.ll[0]) * 111, (c[1] - inl.ll[1]) * 108.5);
+      v += (inl.load / 400) * Math.exp(-dkm / 0.55);
+    });
+    // hyacinth patches near east end read as vegetation, masked
+    const veg = (c[1] > 77.672 && R() < 0.35);
+    cells.push({ ll: c, ndti: clamp(v, -0.15, 0.35), veg });
+  }
+  const ranking = inlets.map(inl => {
+    const near = cells.filter(c => !c.veg && Math.hypot((c.ll[0] - inl.ll[0]) * 111, (c.ll[1] - inl.ll[1]) * 108.5) < 0.45);
+    const m = near.length ? near.reduce((s, c) => s + c.ndti, 0) / near.length : 0;
+    return { drain: inl.drain, ndti: m };
+  }).sort((a, b) => b.ndti - a.ndti);
+  S.sky = { t: S.t, cloud, usable, cells, ranking, source: 'Simulated pass (live: Sentinel-2 L2A NDTI from backend)' };
+  if (usable && ranking[0].ndti > 0.08) {
+    const top = ranking[0], d = S.drains[top.drain];
+    const key = `SKY:${top.drain}:${d.nodes.length - 1}-${d.nodes.length - 1}`;
+    raiseAlert(key, { type: 'SKY', drain: top.drain, a: d.nodes.length - 1, b: d.nodes.length - 1, sev: 1, dept: ['KSPCB', 'KTCDA'], val: { ndti: top.ndti } });
+  }
+  addLog('OPS', usable ? `Sentinel-2 pass processed: worst inlet ${S.drains[ranking[0].drain].inlet} (NDTI ${fmt(ranking[0].ndti, 2)})` : `Sentinel-2 pass unusable: ${cloud}% cloud over Bellandur; kept previous clear view`);
+  if (manual) toast(usable ? 'New Sentinel-2 pass processed' : `Pass rejected: ${cloud}% cloud cover`);
+}
+
+// ---------- Weather (Open-Meteo live, sample fallback) ----------
+const WMO = { 0: 'Clear', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Fog', 51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle', 61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 80: 'Showers', 81: 'Heavy showers', 82: 'Violent showers', 95: 'Thunderstorm', 96: 'Thunderstorm, hail', 99: 'Thunderstorm, hail' };
+function sampleWeather() {
+  const now = new Date(S.t); const h = (now.getUTCHours() + 5.5) % 24;
+  const zones = ZONES.map((z, i) => {
+    const temp = 22.5 + 4.5 * Math.sin(((h - 9) / 24) * 2 * Math.PI) + (i % 3) * 0.4 - (z.id === 'hebbal' ? 0.6 : 0);
+    const cloud = 55 + ((i * 13) % 30);
+    const rain = (h > 15 && h < 19 && i % 2 === 0) ? 1.2 + (i % 3) : 0;
+    const wet = [1.0, 0.8, 1.2, 0.9, 0.5, 0.6, 0.3, 0.4][i] || 0.5; const hourly = Array.from({ length: 12 }, (_, k) => { const hh = (h + k) % 24; const p = Math.round(((hh > 14 && hh < 20) ? 60 : 18) * (0.6 + wet * 0.4)); return { h: Math.floor(hh), p, mm: p > 45 ? +(wet * (1 + (k % 3) * 0.8)).toFixed(1) : 0 }; });
+    return { id: z.id, name: z.name, temp, hum: 74 + (i % 4) * 3, cloud, rain, wind: 8 + (i % 5), code: rain > 0 ? 61 : (cloud > 70 ? 3 : 2), rain6: hourly.slice(0, 6).reduce((s, x) => s + x.mm, 0), hourly };
+  });
+  return { zones, src: 'Sample data (live Open-Meteo loads outside the claude.ai preview)', t: S.t };
+}
+async function loadWeather() {
+  try {
+    const lat = ZONES.map(z => z.ll[0]).join(','), lon = ZONES.map(z => z.ll[1]).join(',');
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m,weather_code&hourly=precipitation_probability,precipitation&forecast_hours=12&timezone=Asia%2FKolkata`;
+    const ctl = new AbortController(); setTimeout(() => ctl.abort(), 6000);
+    const r = await fetch(url, { signal: ctl.signal });
+    if (!r.ok) throw new Error(r.status);
+    let j = await r.json(); if (!Array.isArray(j)) j = [j];
+    const zones = j.map((w, i) => {
+      const c = w.current, hr = w.hourly;
+      const hourly = hr.time.map((t, k) => ({ h: +t.slice(11, 13), p: hr.precipitation_probability[k], mm: hr.precipitation[k] }));
+      return { id: ZONES[i].id, name: ZONES[i].name, temp: c.temperature_2m, hum: c.relative_humidity_2m, cloud: c.cloud_cover, rain: c.precipitation, wind: c.wind_speed_10m, code: c.weather_code, rain6: hourly.slice(0, 6).reduce((s, x) => s + (x.mm || 0), 0), hourly };
+    });
+    S.weather = { zones, src: 'Open-Meteo (live)', t: Date.now() }; S.wxLive = true;
+  } catch (e) {
+    S.weather = sampleWeather(); S.wxLive = false;
+  }
+  renderWeather(); updateMapStyles();
+}
+
+// ---------- Live backend ----------
+async function probeLive() {
+  const bases = [];
+  if (S.apiBase) bases.push(S.apiBase.replace(/\/$/, ''));
+  if (location.protocol.startsWith('http')) bases.push('');
+  for (const b of bases) {
+    try {
+      const ctl = new AbortController(); setTimeout(() => ctl.abort(), 2500);
+      const r = await fetch(b + '/api/state', { signal: ctl.signal });
+      if (r.ok) { const j = await r.json(); if (j && j.nodes) { S.live = true; S.liveBase = b; applyLive(j); return true; } }
+    } catch (e) {}
+  }
+  return false;
+}
+function applyLive(j) {
+  // live readings override simulated nodes with the same id
+  Object.values(j.nodes || {}).forEach(r => {
+    const n = S.nodes[r.node_id]; if (!n) return;
+    Object.assign(n, { level: r.level_cm, turb: r.turbidity_ntu, tds: r.tds_ppm, ph: r.ph ?? n.ph, temp: r.temp_c ?? n.temp, batt: r.battery ?? n.batt, rssi: r.rssi ?? n.rssi, source: 'LIVE', updated: Date.parse(r.ts) || Date.now() });
+  });
+  if (j.sky && j.sky.cells) S.sky = j.sky;
+}
+async function pollLive() {
+  if (!S.live) return;
+  try { const r = await fetch(S.liveBase + '/api/state'); if (r.ok) applyLive(await r.json()); } catch (e) {}
+}
+async function postAction(al, st) {
+  try { await fetch(S.liveBase + '/api/actions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ alert_key: al.key, alert_id: al.id, step: st.label, dept: al.history.at(-1).dept, ts: new Date(S.t).toISOString() }) }); } catch (e) {}
+}
+
+// ---------- Map ----------
+let map, baseLayers = {}, L_layers = {}, drainLines = {}, nodeMarkers = {}, zoneMarkers = {}, skyLayer, solLayer;
+const LAYER_DEFS = [
+  ['drains', 'Drains by status', '#19b3bf', true],
+  ['nodes', 'Sensor nodes', '#ffffff', true],
+  ['sky', 'Sentinel-2 sky view (lake NDTI)', '#c98b2e', true],
+  ['risk', 'Flood risk by area', '#e5484d', true],
+  ['weather', 'Weather labels', '#4aa3ff', false],
+  ['solution', 'Solution assets', '#3fbf6f', true],
+  ['valleys', 'Valleys & city outline', '#295868', true],
+];
+const layerOn = store.get('layers', Object.fromEntries(LAYER_DEFS.map(l => [l[0], l[3]])));
+
+function initMap() {
+  map = L.map('map', { zoomControl: true, attributionControl: true, preferCanvas: false }).setView([12.947, 77.645], 13);
+  map.attributionControl.setPrefix('Leaflet');
+  baseLayers.street = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles &copy; Esri' });  baseLayers.sentinel = L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2021_3857/default/g/{z}/{y}/{x}.jpg', { maxZoom: 17, attribution: 'Sentinel-2 cloudless 2021 by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2021)' });
+  // schematic base
+  L_layers.valleys = L.layerGroup();
+  VALLEYS.forEach(v => L.polygon(v.poly, { color: v.color, weight: 1, opacity: 0.4, fillOpacity: 0.05, dashArray: '4 4', interactive: false }).addTo(L_layers.valleys));
+  L.polygon(GBA_BOUNDARY, { color: '#6f8f98', weight: 1.5, fill: false, dashArray: '2 6', interactive: false }).addTo(L_layers.valleys);
+  L.polyline(ORR, { color: '#3b5c66', weight: 3, opacity: 0.8, interactive: false }).addTo(L_layers.valleys);
+  VALLEYS.forEach(v => { const c = v.poly.reduce((a, p) => [a[0] + p[0] / v.poly.length, a[1] + p[1] / v.poly.length], [0, 0]); L.marker(c, { interactive: false, icon: L.divIcon({ className: 'maplabel', html: v.name, iconSize: null }) }).addTo(L_layers.valleys); });
+  L.marker([12.9295, 77.5520], { interactive: false, icon: L.divIcon({ className: 'maplabel', html: 'Outer Ring Road', iconSize: null }) }).addTo(L_layers.valleys);
+  // lakes (always shown)
+  const lakeG = L.layerGroup().addTo(map);
+  LAKES.forEach(l => {
+    const style = { color: '#2f7fb5', weight: 1, fillColor: '#1d5f8c', fillOpacity: 0.55 };
+    const shape = l.poly ? L.polygon(l.poly, style) : L.circle([l.circle[0], l.circle[1]], { radius: l.circle[2], ...style });
+    shape.addTo(lakeG).on('click', () => select('lake', l.id));
+    const c = l.poly ? l.poly.reduce((a, p) => [a[0] + p[0] / l.poly.length, a[1] + p[1] / l.poly.length], [0, 0]) : [l.circle[0], l.circle[1]];
+    L.marker(c, { interactive: false, icon: L.divIcon({ className: 'maplabel lake', html: l.name, iconSize: null, iconAnchor: [-6, 6] }) }).addTo(lakeG);
+  });
+  // drains: stretches between nodes
+  L_layers.drains = L.layerGroup();
+  DRAINS.forEach(d => {
+    const segs = splitPath(d);
+    drainLines[d.id] = segs.map((pts, k) => {
+      const pl = L.polyline(pts, { color: '#19b3bf', weight: 5, opacity: 0.95, lineCap: 'round' });
+      pl.on('click', () => select('stretch', `${d.id}:${k}`));
+      pl.bindTooltip('', { sticky: true });
+      pl.addTo(L_layers.drains);
+      return pl;
+    });
+    const mid = d.path[Math.floor(d.path.length / 3)];
+    L.marker(mid, { interactive: false, icon: L.divIcon({ className: 'maplabel', html: d.name, iconSize: null, iconAnchor: [-10, 14] }) }).addTo(L_layers.drains);
+  });
+  // nodes
+  L_layers.nodes = L.layerGroup();
+  Object.values(S.nodes).forEach(n => {
+    const m = L.marker(n.ll, { icon: nodeIcon(n, '#3fbf6f', false) });
+    m.on('click', () => select('node', n.id));
+    m.bindTooltip(n.id, { direction: 'top', offset: [0, -8] });
+    m.addTo(L_layers.nodes);
+    nodeMarkers[n.id] = m;
+  });
+  // zones (risk)
+  L_layers.risk = L.layerGroup();
+  L_layers.weather = L.layerGroup();
+  ZONES.forEach(z => {
+    const c = L.circle(z.ll, { radius: 900, weight: 1, color: '#3fbf6f', fillOpacity: 0.12 });
+    c.on('click', () => select('zone', z.id));
+    c.addTo(L_layers.risk);
+    const lab = L.marker(z.ll, { icon: L.divIcon({ className: 'maplabel zone', html: z.name, iconSize: null, iconAnchor: [-12, 22] }) });
+    lab.on('click', () => select('zone', z.id));
+    lab.addTo(L_layers.risk);
+    const wl = L.marker([z.ll[0] - 0.006, z.ll[1]], { interactive: false, icon: L.divIcon({ className: 'maplabel', html: '', iconSize: null }) }).addTo(L_layers.weather);
+    zoneMarkers[z.id] = { c, lab, wl };
+  });
+  L_layers.sky = L.layerGroup();
+  L_layers.solution = L.layerGroup();
+  LAYER_DEFS.forEach(([k]) => { if (layerOn[k]) L_layers[k].addTo(map); });
+  // basemap buttons
+  document.querySelectorAll('#basemap button').forEach(b => b.onclick = () => setBase(b.dataset.b));
+  probeTiles();
+  renderLegend();
+}
+function splitPath(d) {
+  // split path into stretches between consecutive nodes (nearest path index)
+  const idx = d.nodes.map(nd => { let best = 0, bd = 1e9; d.path.forEach((p, i) => { const dd = (p[0] - nd[1]) ** 2 + (p[1] - nd[2]) ** 2; if (dd < bd) { bd = dd; best = i; } }); return best; });
+  const segs = [];
+  for (let k = 0; k < idx.length - 1; k++) segs.push(d.path.slice(idx[k], idx[k + 1] + 1));
+  return segs;
+}
+function nodeIcon(n, color, pulse) {
+  const ring = n.source === 'LIVE' ? '#ffffff' : '#cfe3e7';
+  return L.divIcon({ className: '', iconSize: [16, 16], iconAnchor: [8, 8], html: `<div class="nodeicon${pulse ? ' pulse' : ''}" style="background:${color};border-color:${ring}"></div>` });
+}
+function probeTiles() {
+  const img = new Image();
+  let done = false;
+  img.onload = () => { done = true; S.tilesOK = true; const b = store.get('base', 'street'); setBase(b); };
+  img.onerror = () => { done = true; tilesUnavailable(); };
+  setTimeout(() => { if (!done) tilesUnavailable(); }, 4000);
+  img.src = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/12/1904/2928';
+}
+function tilesUnavailable() {
+  S.tilesOK = false;
+  document.querySelectorAll('#basemap button').forEach(b => { if (b.dataset.b !== 'schematic') { b.disabled = true; b.title = 'Map tiles are blocked in this preview. Run the app from the backend or your laptop to load them.'; } });
+  const n = document.getElementById('mapnote');
+  n.style.display = 'block';
+  n.textContent = 'Schematic map: street and Sentinel-2 imagery load when the app runs outside the claude.ai preview. Shapes are approximate, not surveyed.';
+}
+function setBase(b) {
+  Object.values(baseLayers).forEach(l => map.removeLayer(l));
+  if (b !== 'schematic' && S.tilesOK) { baseLayers[b].addTo(map); baseLayers[b].bringToBack(); document.getElementById('mapnote').style.display = 'none'; }
+  document.querySelectorAll('#basemap button').forEach(x => x.classList.toggle('on', x.dataset.b === b));
+  store.set('base', b);
+}
+
+function stretchState(d, k) {
+  // worst open alert on this stretch
+  const al = S.alerts.filter(a => a.status !== 'RESOLVED' && a.drain === d.id && ((a.a === k && a.b === k + 1) || (a.a === a.b && (a.a === k || a.a === k + 1))));
+  const order = ['BLOCKAGE', 'OVERFLOW', 'DISCHARGE', 'SEWAGE', 'TREATMENT', 'SKY', 'SENSOR'];
+  al.sort((x, y) => order.indexOf(x.type) - order.indexOf(y.type));
+  return al[0];
+}
+function levelColor(frac) { return frac > 0.85 ? '#e5484d' : frac > 0.6 ? '#f2a516' : '#19b3bf'; }
+function updateMapStyles() {
+  if (!map) return;
+  // drains
+  DRAINS.forEach(d => {
+    const rd = S.drains[d.id];
+    drainLines[d.id].forEach((pl, k) => {
+      const al = stretchState(rd, k);
+      const a = S.nodes[d.nodes[k][0]], b = S.nodes[d.nodes[k + 1][0]];
+      const frac = Math.max(a.level, b.level) / d.cap;
+      let color = levelColor(frac), dash = null, weight = 5;
+      if (al) { color = TYPE[al.type].color; weight = 8; }
+      if (k === d.nodes.length - 2 && S.solution === 'A' && !al) color = '#3fbf6f';
+      const deptMatch = S.dept === 'ALL' || (al && al.dept.includes(S.dept));
+      pl.setStyle({ color, weight, dashArray: dash, opacity: deptMatch || !al ? 0.95 : 0.35 });
+      pl.setTooltipContent(`<b>${a.id} → ${b.id}</b><br>${al ? TYPE[al.type].title : 'Normal flow'}<br>Level ${fmt(a.level)} → ${fmt(b.level)} cm · Turbidity ${fmt(a.turb)} → ${fmt(b.turb)} NTU`);
+    });
+  });
+  // nodes
+  Object.values(S.nodes).forEach(n => {
+    const d = S.drains[n.drain];
+    const al = S.alerts.find(a => a.status !== 'RESOLVED' && a.drain === n.drain && (a.a === n.idx || a.b === n.idx) && a.type !== 'SKY');
+    let color = levelColor(n.level / d.cap);
+    if (n.turb > 150) color = '#a77bf3';
+    if (n.stuck) color = '#6f8f98';
+    if (al) color = TYPE[al.type].color;
+    nodeMarkers[n.id].setIcon(nodeIcon(n, color, al && al.status === 'NEW'));
+    nodeMarkers[n.id].setTooltipContent(`<b>${n.id}</b> ${n.source === 'LIVE' ? '(live)' : '(sim)'}<br>Level ${fmt(n.level)} cm · Turb ${fmt(n.turb)} NTU`);
+  });
+  // zones
+  ZONES.forEach(z => {
+    const s = zoneRisk(z), [band, col] = riskBand(s);
+    zoneMarkers[z.id].c.setStyle({ color: col, fillColor: col, fillOpacity: 0.10 + s / 400 });
+    const w = S.weather?.zones.find(x => x.id === z.id);
+    zoneMarkers[z.id].wl.setIcon(L.divIcon({ className: 'maplabel', html: w ? `${fmt(w.temp, 1)}°C · ${w.cloud}% cloud${w.rain > 0 ? ' · ' + fmt(w.rain, 1) + ' mm/h' : ''}` : '', iconSize: null, iconAnchor: [-12, 0] }));
+  });
+  renderSky();
+}
+function ndtiColor(v) {
+  // clear blue -> green -> yellow -> brown
+  const stops = [[-0.15, [40, 110, 200]], [0.0, [40, 170, 170]], [0.08, [120, 190, 80]], [0.16, [230, 200, 60]], [0.25, [200, 120, 40]], [0.35, [120, 60, 30]]];
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [a, ca] = stops[i], [b, cb] = stops[i + 1];
+    if (v <= b) { const t = clamp((v - a) / (b - a), 0, 1); const c = ca.map((x, j) => Math.round(x + (cb[j] - x) * t)); return `rgb(${c.join(',')})`; }
+  }
+  return 'rgb(120,60,30)';
+}
+function renderSky() {
+  if (!S.sky || !L_layers.sky) return;
+  L_layers.sky.clearLayers();
+  const h = 0.0006;
+  S.sky.cells.forEach(c => {
+    L.rectangle([[c.ll[0] - h, c.ll[1] - h], [c.ll[0] + h, c.ll[1] + h]], { stroke: false, fillColor: c.veg ? '#2f5d2a' : ndtiColor(c.ndti), fillOpacity: S.sky.usable ? 0.85 : 0.35, interactive: false }).addTo(L_layers.sky);
+  });
+  if (S.sky.ranking) {
+    const top = S.sky.ranking[0]; const d = S.drains[top.drain]; const last = d.nodes[d.nodes.length - 1];
+    L.circleMarker([last[1], last[2]], { radius: 14, color: '#ffd58a', weight: 2, fill: false, dashArray: '3 3' }).bindTooltip(`Sky view: worst inlet<br>${d.inlet} · NDTI ${fmt(top.ndti, 2)}`).addTo(L_layers.sky);
+  }
+}
+function renderSolutionLayer() {
+  if (!L_layers.solution) return;
+  L_layers.solution.clearLayers();
+  if (S.solution === 'A') {
+    DRAINS.forEach(d => {
+      const a = d.nodes[d.nodes.length - 2], b = d.nodes[d.nodes.length - 1];
+      const ll = [(a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+      const rd = S.drains[d.id];
+      L.marker(ll, { icon: L.divIcon({ className: '', iconSize: [20, 20], iconAnchor: [10, 10], html: `<div style="width:20px;height:20px;border-radius:5px;background:#3fbf6f;border:2px solid #fff;display:grid;place-items:center;font-size:11px;font-weight:700;color:#05301a">T</div>` }) })
+        .bindTooltip(`<b>Inlet biofilter · ${d.inlet}</b><br>Design removal ${fmt(rd.treatEff * 100)}% · health ${fmt(rd.treatHealth * 100)}%`).on('click', () => select('stretch', `${d.id}:${d.nodes.length - 2}`)).addTo(L_layers.solution);
+    });
+  } else if (S.solution === 'B') {
+    SPONGES.forEach(s => L.circle(s.ll, { radius: s.r, color: '#3fbf6f', weight: 1.5, fillColor: '#3fbf6f', fillOpacity: 0.3, dashArray: '3 3' }).bindTooltip(`<b>${s.name}</b><br>Holds part of the runoff before ${S.drains[s.drain].name}`).addTo(L_layers.solution));
+  } else {
+    VLAKES.forEach(v => L.marker(v.ll, { icon: L.divIcon({ className: '', iconSize: [22, 22], iconAnchor: [11, 11], html: `<div style="width:22px;height:22px;border-radius:50%;background:#4aa3ff;border:2px solid #fff;display:grid;place-items:center;font-size:10px;font-weight:700;color:#06213a">V</div>` }) }).bindTooltip(`<b>${v.name}</b><br>Holds water when the drain downstream is near capacity`).addTo(L_layers.solution));
+  }
+}
+function renderLegend() {
+  document.getElementById('legend').innerHTML = `
+    <div style="font-weight:600;color:var(--ink);margin-bottom:4px">Legend</div>
+    <div class="row"><span class="swatch" style="background:#19b3bf"></span>Normal flow</div>
+    <div class="row"><span class="swatch" style="background:#f2a516"></span>Rising level or sewage</div>
+    <div class="row"><span class="swatch" style="background:#e5484d"></span>Blockage or overflow risk</div>
+    <div class="row"><span class="swatch" style="background:#a77bf3"></span>Industrial discharge</div>
+    <div class="row"><span class="swatch" style="background:#3fbf6f"></span>Treated inlet stretch</div>
+    <div style="margin-top:6px">Sentinel-2 NDTI (turbidity)</div>
+    <div class="ramp" style="background:linear-gradient(90deg,${[-0.15, 0, 0.08, 0.16, 0.25, 0.35].map(ndtiColor).join(',')})"></div>
+    <div style="display:flex;justify-content:space-between"><span>clear</span><span>turbid</span></div>
+    <div class="note" style="margin-top:4px">Circles: flood risk by area (green, amber, red)</div>`;
+}
+
+// ---------- Selection ----------
+function select(kind, id) {
+  S.selected = { kind, id };
+  showRight('rDetail');
+  renderDetail();
+  if (kind === 'node') { const n = S.nodes[id]; threeDrainSel.value = n.drain; setThreeDrain(n.drain); }
+  if (kind === 'stretch') { const d = id.split(':')[0]; threeDrainSel.value = d; setThreeDrain(d); }
+  renderTrends();
+}
+function renderDetail() {
+  const el = document.getElementById('rDetail');
+  const sel = S.selected;
+  if (!sel) { el.innerHTML = '<div class="empty">Click a drain stretch, sensor node, area or lake on the map.</div>'; return; }
+  if (sel.kind === 'node') {
+    const n = S.nodes[sel.id], d = S.drains[n.drain];
+    const als = S.alerts.filter(a => a.drain === d.id && (a.a === n.idx || a.b === n.idx) && a.status !== 'RESOLVED');
+    el.innerHTML = `<h3>Sensor node</h3><div style="font-size:18px;font-weight:600">${n.id} <span class="badge ${n.source === 'LIVE' ? 'live' : 'sim'}" style="font-size:10px">${n.source}</span></div>
+      <div class="note">${esc(d.name)} · node ${n.idx + 1} of ${d.nodes.length}${n.last ? ' · after inlet treatment' : ''}</div>
+      <div class="read">
+        <div><b>${fmt(n.level)}</b><span>Level cm (cap ${d.cap})</span></div>
+        <div><b>${fmt(n.turb)}</b><span>Turbidity NTU</span></div>
+        <div><b>${fmt(n.tds)}</b><span>TDS ppm</span></div>
+        <div><b>${fmt(n.ph, 1)}</b><span>pH</span></div>
+        <div><b>${fmt(n.temp, 1)}</b><span>Water °C</span></div>
+        <div><b>${fmt(n.batt)}%</b><span>Battery</span></div>
+      </div>
+      <div class="kv"><span>Link</span><b>${n.source === 'LIVE' ? 'LoRa / Wi-Fi' : 'Simulated'} · RSSI ${fmt(n.rssi)} dBm</b><span>Last reading</span><b>${hhmm(n.updated || S.t)}</b><span>Location</span><b class="mono">${n.ll[0].toFixed(4)}, ${n.ll[1].toFixed(4)}</b></div>
+      <h3 style="margin-top:14px">Open alerts here</h3>${als.length ? als.map(alertCard).join('') : '<div class="note">None</div>'}
+      <button class="btn" style="width:100%;margin-top:8px" onclick="switchTab('vTrend')">Open trends for ${n.id}</button>`;
+  } else if (sel.kind === 'stretch') {
+    const [did, k] = sel.id.split(':'); const d = S.drains[did]; const a = S.nodes[d.nodes[+k][0]], b = S.nodes[d.nodes[+k + 1][0]];
+    const al = stretchState(d, +k);
+    const treated = b.last;
+    const eff = treated ? (a.turb - b.turb) / Math.max(1, a.turb) : null;
+    el.innerHTML = `<h3>Drain stretch</h3><div style="font-size:16px;font-weight:600">${a.id} → ${b.id}</div><div class="note">${esc(d.name)}${treated ? ' · through the inlet treatment unit' : ''}</div>
+      <table style="width:100%;margin:10px 0;border-collapse:collapse;font-size:12.5px">
+      <tr style="color:var(--ink3)"><td></td><td>${a.id} (up)</td><td>${b.id} (down)</td><td>Change</td></tr>
+      ${[['Level cm', 'level', 0], ['Turbidity NTU', 'turb', 0], ['TDS ppm', 'tds', 0], ['pH', 'ph', 1]].map(([l, f, dp]) => `<tr><td style="color:var(--ink3);padding:4px 0">${l}</td><td class="mono">${fmt(a[f], dp)}</td><td class="mono">${fmt(b[f], dp)}</td><td class="mono">${(b[f] - a[f] >= 0 ? '+' : '') + fmt(b[f] - a[f], dp)}</td></tr>`).join('')}
+      </table>
+      ${treated ? `<div class="read"><div style="grid-column:span 3"><b style="color:var(--green)">${S.solution === 'A' ? fmt(eff * 100) + '%' : 'No unit'}</b><span>Turbidity removed by inlet biofilter${S.solution === 'A' ? ` · unit health ${fmt(d.treatHealth * 100)}%` : ' (select solution A)'}</span></div></div>` : ''}
+      <h3>Diagnosis</h3><div class="note" style="font-size:12.5px;color:var(--ink2)">${al ? `<b style="color:${TYPE[al.type].color}">${TYPE[al.type].title}.</b> ${diagnosis(al, a, b)}` : 'Readings are consistent between the two nodes. No action needed.'}</div>
+      ${al ? '<h3 style="margin-top:12px">Alert</h3>' + alertCard(al) : ''}`;
+  } else if (sel.kind === 'zone') {
+    const z = ZONES.find(x => x.id === sel.id); const s = zoneRisk(z); const [band, col] = riskBand(s);
+    const w = S.weather?.zones.find(x => x.id === z.id);
+    el.innerHTML = `<h3>Area</h3><div style="font-size:18px;font-weight:600">${z.name}</div>
+      <div class="read"><div><b style="color:${col}">${s}</b><span>Flood risk / 100</span></div><div><b>${band}</b><span>Band</span></div><div><b>${z.drains.length}</b><span>Drains watched</span></div></div>
+      ${w ? `<div class="wx"><div class="big">${wxIcon(w)}<b>${fmt(w.temp, 1)}°C</b><div><div>${WMO[w.code] || ''}</div><div class="note">Humidity ${w.hum}% · cloud ${w.cloud}% · wind ${fmt(w.wind)} km/h</div></div></div>
+        <div class="note" style="margin:8px 0 4px">Next 12 hours: rain chance</div><div class="hourly">${w.hourly.map(x => `<div><b>${x.p ?? '–'}%</b>${String(x.h).padStart(2, '0')}h${x.mm ? '<br>' + fmt(x.mm, 1) + 'mm' : ''}</div>`).join('')}</div></div>` : ''}
+      <div class="note">Risk combines drain levels (35%), rain now (25%), rain in next 6 h (20%), blockages (12%) and how low-lying the area is (8%).</div>
+      ${z.drains.map(id => `<button class="btn" style="width:100%;margin-top:6px" onclick="select('node','${S.drains[id].nodes[0][0]}')">Show ${esc(S.drains[id].name)}</button>`).join('')}`;
+  } else if (sel.kind === 'lake') {
+    const l = LAKES.find(x => x.id === sel.id);
+    el.innerHTML = `<h3>Lake</h3><div style="font-size:18px;font-weight:600">${l.name}</div>
+      ${l.id === 'bellandur' ? `<p class="note">Pilot lake. Four monitored inlets feed it; it overflows into Varthur Lake. See the Sky view tab for the latest satellite turbidity map and inlet ranking.</p><button class="btn primary" onclick="showRight('rSky')">Open sky view</button>` : `<p class="note">${l.sky ? 'Satellite watch only: Sentinel-2 turbidity tracked each clear pass. No ground nodes yet.' : 'Not monitored in this pilot. Candidate for the city-wide scale-up.'}</p>`}`;
+  }
+}
+function diagnosis(al, a, b) {
+  if (al.type === 'BLOCKAGE') return `Water is backing up at ${a.id} (${fmt(a.level)} cm) while ${b.id} downstream is low (${fmt(b.level)} cm). Silt or debris is likely blocking the drain between them. Send a desilting crew to this stretch.`;
+  if (al.type === 'DISCHARGE') return `Turbidity jumps by ${fmt(b.turb - a.turb)} NTU and pH is ${fmt(b.ph, 1)} at ${b.id}. This points to industrial effluent entering between ${a.id} and ${b.id}. Inspect outlets on this stretch.`;
+  if (al.type === 'SEWAGE') return `TDS rises by ${fmt(b.tds - a.tds)} ppm with near-neutral pH. This is typical of sewage leaking into the stormwater drain between ${a.id} and ${b.id}. Check sewer lines and connections.`;
+  if (al.type === 'TREATMENT') return `The inlet biofilter removes only ${fmt((a.turb - b.turb) / Math.max(1, a.turb) * 100)}% turbidity. Filter media are likely clogged.`;
+  if (al.type === 'OVERFLOW') return `Water level is above 85% of drain depth. Overflow onto the road is likely if rain continues.`;
+  return '';
+}
+
+// ---------- Alerts panel ----------
+function alertCard(al) {
+  const T = TYPE[al.type], steps = T.steps;
+  const next = steps[al.step];
+  const mine = S.dept === 'ALL' || al.dept.includes(S.dept);
+  const age = Math.round((S.t - al.created) / 60000);
+  const overdue = al.status === 'NEW' && age > 15;
+  return `<div class="alert ${S.selected?.kind === 'alert' && S.selected.id === al.id ? 'sel' : ''}" onclick="focusAlert('${al.id}')">
+    <div class="hd"><span class="sev" style="background:${T.color}"></span><span class="tt">${T.title}</span><span class="st ${al.status.replace(' ', '')}">${al.status}${overdue ? ' · overdue' : ''}</span></div>
+    <div class="meta">${esc(stretchName(al))}<br>${al.id} · raised ${hhmm(al.created)} · ${age} min ago${al.cleared ? ' · condition cleared' : ''}</div>
+    <div class="depts">${al.dept.map(d => `<span class="dtag" style="background:${DEPTS[d].color}22;color:${DEPTS[d].color}">${DEPTS[d].short}</span>`).join('')}</div>
+    <div class="steps">${steps.map((s, i) => `<i class="${i < al.step ? 'done' : ''}" title="${s.label}"></i>`).join('')}</div>
+    ${al.history.length ? `<div class="meta">Last: ${esc(al.history.at(-1).label)} by ${al.history.at(-1).dept} at ${hhmm(al.history.at(-1).t)}</div>` : ''}
+    ${next && mine ? `<div class="actions"><button class="btn small primary" onclick="event.stopPropagation();actOnId('${al.id}')">${next.label}</button><button class="btn small" onclick="event.stopPropagation();focusAlert('${al.id}',true)">Show on map</button></div>` : ''}
+    ${next && !mine ? `<div class="meta">Waiting on ${al.dept.join(' / ')}</div>` : ''}
+  </div>`;
+}
+let alertFilter = 'open';
+function renderAlerts() {
+  const el = document.getElementById('rAlerts');
+  const list = S.alerts.filter(a => (S.dept === 'ALL' || a.dept.includes(S.dept)) && (alertFilter === 'all' || (alertFilter === 'open' ? a.status !== 'RESOLVED' : a.status === 'RESOLVED')));
+  el.innerHTML = `<div class="deptbar">${['open', 'resolved', 'all'].map(f => `<button class="chip ${alertFilter === f ? 'on' : ''}" onclick="alertFilter='${f}';renderAlerts()">${f[0].toUpperCase() + f.slice(1)}</button>`).join('')}
+    <span style="flex:1"></span><span class="note" style="align-self:center">${S.dept === 'ALL' ? 'All departments' : DEPTS[S.dept].name}</span></div>
+    ${list.length ? list.map(alertCard).join('') : `<div class="empty">No ${alertFilter === 'all' ? '' : alertFilter} alerts${S.dept !== 'ALL' ? ' for ' + DEPTS[S.dept].short : ''}.<br><br>Use the scenario controls on the left to trigger a blockage, dumping or rain event.</div>`}`;
+}
+window.actOnId = (id) => { const al = S.alerts.find(a => a.id === id); if (al) actOn(al); };
+window.focusAlert = (id, zoom) => {
+  const al = S.alerts.find(a => a.id === id); if (!al) return;
+  const d = S.drains[al.drain];
+  if (zoom) { switchTab('vMap'); const a = d.nodes[al.a], b = d.nodes[al.b]; map.flyTo([(a[1] + b[1]) / 2, (a[2] + b[2]) / 2], 15, { duration: 0.8 }); }
+  S.selected = { kind: 'stretch', id: `${d.id}:${Math.min(al.a, d.nodes.length - 2)}` };
+  threeDrainSel.value = d.id; setThreeDrain(d.id);
+  renderDetail(); showRight('rDetail');
+};
+window.select = select;
+
+// ---------- Sky view panel ----------
+function renderSkyPanel() {
+  const el = document.getElementById('rSky');
+  if (!S.sky) { el.innerHTML = '<div class="empty">No satellite pass yet.</div>'; return; }
+  const sky = S.sky;
+  const max = Math.max(...sky.ranking.map(r => r.ndti), 0.01);
+  el.innerHTML = `<h3>Sentinel-2 sky view · Bellandur</h3>
+    ${sky.usable ? '' : `<div class="warnnote">Last pass rejected: ${sky.cloud}% cloud. Showing faded cells; rely on ground nodes until the next clear pass.</div>`}
+    <div class="kv"><span>Pass processed</span><b>${hhmm(sky.t)}</b><span>Cloud over lake</span><b>${sky.cloud}%</b><span>Usable</span><b style="color:${sky.usable ? 'var(--green)' : 'var(--amber)'}">${sky.usable ? 'Yes' : 'No'}</b><span>Water cells</span><b>${sky.cells.filter(c => !c.veg).length} (${sky.cells.filter(c => c.veg).length} masked as hyacinth)</b></div>
+    <h3 style="margin-top:14px">Inlets ranked by turbidity nearby</h3>
+    ${sky.ranking.map((r, i) => { const d = S.drains[r.drain]; return `<div style="margin:8px 0;cursor:pointer" onclick="select('node','${d.nodes[d.nodes.length - 1][0]}')">
+      <div style="display:flex;justify-content:space-between"><span>${i + 1}. ${esc(d.inlet)}</span><b class="mono">${fmt(r.ndti, 3)}</b></div>
+      <div style="height:7px;background:var(--line);border-radius:4px;margin-top:3px"><div style="height:7px;border-radius:4px;width:${clamp(r.ndti / max * 100, 3, 100)}%;background:${ndtiColor(r.ndti)}"></div></div></div>`; }).join('')}
+    <h3 style="margin-top:14px">How the sky view works</h3>
+    <p class="note">Each clear Sentinel-2 pass (about every 5 days) gives 10 m pixels. NDTI = (Red − Green) / (Red + Green) rises with suspended sediment and sewage. Water is masked with NDWI; floating hyacinth is masked with NDVI. The inlet with the highest nearby NDTI is checked first by its ground nodes. The satellite points; the nodes prove.</p>
+    <p class="note">Source: ${esc(sky.source)}</p>
+    <button class="btn primary" style="width:100%" onclick="satellitePass(true);renderAll()">Process a new pass now</button>`;
+}
+
+// ---------- Weather panel ----------
+function wxIcon(w) {
+  const rain = w.rain > 0 || [51, 53, 55, 61, 63, 65, 80, 81, 82, 95].includes(w.code);
+  const cloud = w.cloud > 60;
+  if (rain) return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#4aa3ff" stroke-width="1.8"><path d="M7 15a4 4 0 1 1 .9-7.9A5 5 0 0 1 17.5 9 3.5 3.5 0 0 1 17 16H7z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>';
+  if (cloud) return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9fb9c0" stroke-width="1.8"><path d="M7 18a4 4 0 1 1 .9-7.9A5 5 0 0 1 17.5 12 3.5 3.5 0 0 1 17 19H7z"/></svg>';
+  return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f2a516" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+}
+function renderWeather() {
+  const el = document.getElementById('rWx');
+  const W = S.weather; if (!W) { el.innerHTML = '<div class="empty">Loading weather…</div>'; return; }
+  const b = W.zones.find(z => z.id === 'bellandur') || W.zones[0];
+  el.innerHTML = `${S.wxLive ? '' : `<div class="warnnote">${esc(W.src)}</div>`}
+    <h3>Bellandur now</h3>
+    <div class="wx"><div class="big">${wxIcon(b)}<b>${fmt(b.temp, 1)}°C</b><div><div>${WMO[b.code] || '—'}</div><div class="note">Humidity ${b.hum}% · wind ${fmt(b.wind)} km/h</div></div></div>
+      <div class="read" style="margin-bottom:0"><div><b>${fmt(b.rain, 1)}</b><span>Rain mm/h</span></div><div><b>${fmt(b.rain6, 1)}</b><span>Rain next 6 h mm</span></div><div><b style="color:${b.cloud < 30 ? 'var(--green)' : b.cloud < 70 ? 'var(--amber)' : 'var(--red)'}">${b.cloud}%</b><span>Cloud cover</span></div></div>
+      <div class="note" style="margin-top:6px">Sentinel-2 today: ${b.cloud < 30 ? 'good, clear view likely' : b.cloud < 70 ? 'partial, some cells masked' : 'poor, rely on ground nodes'}</div></div>
+    <h3>All watched areas</h3>
+    <div class="wxrow hd"><span>Area</span><span>Temp</span><span>Cloud</span><span>Rain 6h</span><span>Flood risk</span></div>
+    ${W.zones.map(w => { const z = ZONES.find(x => x.id === w.id); const s = zoneRisk(z); const [band, col] = riskBand(s); return `<div class="wxrow" onclick="select('zone','${w.id}')"><span>${esc(w.name)}</span><span class="mono">${fmt(w.temp, 1)}°</span><span class="mono">${w.cloud}%</span><span class="mono">${fmt(w.rain6, 1)}</span><span class="risk" style="background:${col}22;color:${col}">${band} ${s}</span></div>`; }).join('')}
+    <h3 style="margin-top:14px">Next 12 hours · Bellandur</h3>
+    <div class="hourly">${b.hourly.map(x => `<div><b>${x.p ?? '–'}%</b>${String(x.h).padStart(2, '0')}h${x.mm ? '<br>' + fmt(x.mm, 1) + 'mm' : ''}</div>`).join('')}</div>
+    <p class="note">Source: ${esc(W.src)} · updated ${hhmm(W.t)}. Rain forecasts feed the flood-risk score, so crews can be sent to blocked stretches before the rain arrives.</p>
+    <button class="btn" style="width:100%" onclick="loadWeather()">Refresh weather</button>`;
+}
+
+// ---------- Bottom: log + department summary ----------
+let logFilter = 'ALL';
+function renderLog() {
+  const el = document.getElementById('log');
+  const rows = S.log.filter(l => logFilter === 'ALL' || l.dept === logFilter).slice(0, 80);
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><h3 style="margin:0;flex:1">Activity log · all updates</h3>${['ALL', ...Object.keys(DEPTS)].map(d => `<button class="chip ${logFilter === d ? 'on' : ''}" onclick="logFilter='${d}';renderLog()">${d === 'ALL' ? 'All' : DEPTS[d].short}</button>`).join('')}</div>
+    ${rows.length ? rows.map(l => `<div class="logrow"><time class="mono">${hhmm(l.t)}</time><span class="dtag" style="background:${DEPTS[l.dept].color}22;color:${DEPTS[l.dept].color};text-align:center">${DEPTS[l.dept].short}</span><span style="${l.isNew ? 'color:#ffd2d3' : ''}">${esc(l.text)}</span></div>`).join('') : '<div class="note">No activity yet.</div>'}`;
+}
+function renderDeptSummary() {
+  const el = document.getElementById('deptsum');
+  el.innerHTML = Object.entries(DEPTS).map(([k, d]) => {
+    const mine = S.alerts.filter(a => a.dept.includes(k));
+    const open = mine.filter(a => a.status !== 'RESOLVED');
+    const newc = open.filter(a => a.status === 'NEW').length;
+    const resolved = mine.filter(a => a.status === 'RESOLVED');
+    const acks = mine.filter(a => a.ackAt).map(a => (a.ackAt - a.created) / 60000);
+    const avg = acks.length ? acks.reduce((s, x) => s + x, 0) / acks.length : null;
+    return `<div class="dcard" onclick="setDept('${k}')" style="${S.dept === k ? 'border-color:' + d.color : ''}">
+      <div class="n"><b style="color:${d.color}">${d.name}</b>${newc ? `<span class="badge" style="background:#4a1416;color:#ffb3b5;font-size:10px">${newc} new</span>` : ''}</div>
+      <div class="note">${d.role}</div>
+      <div class="stats"><span><b>${open.length}</b> open</span><span><b>${resolved.length}</b> resolved</span><span><b>${avg == null ? '–' : fmt(avg)}</b> min to ack</span></div></div>`;
+  }).join('');
+}
+window.setDept = (k) => { S.dept = k; store.set('dept', k); document.getElementById('deptSel').value = k; renderAll(); };
+
+// ---------- KPIs ----------
+function renderKPIs() {
+  const open = S.alerts.filter(a => a.status !== 'RESOLVED');
+  const nodes = Object.values(S.nodes);
+  const online = nodes.filter(n => !n.stuck).length;
+  const risks = ZONES.map(zoneRisk); const high = risks.filter(s => s >= 60).length;
+  const effs = DRAINS.map(d => { const a = S.nodes[d.nodes[d.nodes.length - 2][0]], b = S.nodes[d.nodes[d.nodes.length - 1][0]]; return (a.turb - b.turb) / Math.max(1, a.turb); });
+  const avgEff = S.solution === 'A' ? effs.reduce((s, x) => s + x, 0) / effs.length : null;
+  const res = S.alerts.filter(a => a.resolvedAt);
+  const mttr = res.length ? res.reduce((s, a) => s + (a.resolvedAt - a.created), 0) / res.length / 60000 : null;
+  const live = nodes.filter(n => n.source === 'LIVE').length;
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi ${open.length ? 'red' : 'green'}"><b>${open.length}</b><span>Open alerts</span></div>
+    <div class="kpi teal"><b>${online}/${nodes.length}</b><span>Nodes online${live ? ' · ' + live + ' live' : ''}</span></div>
+    <div class="kpi ${high ? 'red' : 'green'}"><b>${high}</b><span>Areas at high flood risk</span></div>
+    <div class="kpi green"><b>${avgEff == null ? '–' : fmt(avgEff * 100) + '%'}</b><span>Inlet turbidity removed</span></div>
+    <div class="kpi amber"><b>${mttr == null ? '–' : fmt(mttr) + ' min'}</b><span>Avg time to resolve</span></div>
+    <div class="kpi"><b>${fmt(Math.max(S.rain, 0), 1)}</b><span>Rain now mm/h</span></div>`;
+}
+
+// ---------- Trends ----------
+function renderTrends() {
+  const el = document.getElementById('trends');
+  if (!document.getElementById('vTrend').classList.contains('on')) return;
+  let id = S.selected?.kind === 'node' ? S.selected.id : null;
+  if (!id && S.selected?.kind === 'stretch') { const [d, k] = S.selected.id.split(':'); id = S.drains[d].nodes[+k][0]; }
+  const drainId = id ? S.nodes[id].drain : 'KV';
+  const d = S.drains[drainId];
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h3 style="margin:0">Sensor trends · ${esc(d.name)}</h3><span class="note">last ${S.hist[d.nodes[0][0]].length} readings, all nodes on this drain</span></div>
+    ${[['level', 'Water level (cm)', d.cap * 0.85, 'Overflow threshold'], ['turb', 'Turbidity (NTU)', null, ''], ['tds', 'TDS (ppm)', null, ''], ['ph', 'pH', null, '']].map(([f, t]) => `<div class="chartcard"><div style="display:flex;justify-content:space-between"><b>${t}</b><span class="note" id="lg_${f}"></span></div><canvas id="c_${f}"></canvas></div>`).join('')}`;
+  const cols = ['#19b3bf', '#4aa3ff', '#f2a516', '#a77bf3', '#3fbf6f'];
+  [['level', d.cap * 0.85], ['turb', null], ['tds', null], ['ph', null]].forEach(([f, thr]) => {
+    const cv = document.getElementById('c_' + f); const ctx = cv.getContext('2d');
+    const W = cv.clientWidth, H = 170; cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio; ctx.scale(devicePixelRatio, devicePixelRatio);
+    const series = d.nodes.map(n => S.hist[n[0]].map(r => r[f]));
+    const all = series.flat().concat(thr ? [thr] : []);
+    let lo = Math.min(...all), hi = Math.max(...all); if (hi - lo < 1) { hi += 1; lo -= 1; } const pad = (hi - lo) * 0.1; lo -= pad; hi += pad;
+    const X = (i, n) => 40 + (W - 50) * (n <= 1 ? 1 : i / (n - 1)), Y = v => 10 + (H - 30) * (1 - (v - lo) / (hi - lo));
+    ctx.strokeStyle = '#1d4452'; ctx.fillStyle = '#6f8f98'; ctx.font = '11px IBM Plex Mono, monospace'; ctx.lineWidth = 1;
+    for (let g = 0; g <= 4; g++) { const v = lo + (hi - lo) * g / 4; const y = Y(v); ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(W - 10, y); ctx.stroke(); ctx.fillText(fmt(v, f === 'ph' ? 1 : 0), 2, y + 4); }
+    if (thr) { ctx.strokeStyle = '#e5484d'; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(40, Y(thr)); ctx.lineTo(W - 10, Y(thr)); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = '#e5484d'; ctx.fillText('overflow', W - 70, Y(thr) - 4); }
+    series.forEach((s, k) => { ctx.strokeStyle = cols[k % cols.length]; ctx.lineWidth = id === d.nodes[k][0] ? 2.6 : 1.5; ctx.beginPath(); s.forEach((v, i) => { const x = X(i, s.length), y = Y(v); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); });
+    document.getElementById('lg_' + f).innerHTML = d.nodes.map((n, k) => `<span style="color:${cols[k % cols.length]}">● ${n[0]}</span>`).join(' &nbsp;');
+  });
+}
+
+// ---------- 3D simulation ----------
+let three = null; const threeDrainSel = document.getElementById('threeDrain');
+function initThree() {
+  const host = document.getElementById('three');
+  if (!window.THREE) { host.innerHTML = '<div class="empty">3D engine failed to load.</div>'; return; }
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+  renderer.setClearColor(0x0a1f27);
+  renderer.shadowMap.enabled = true;
+  host.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x0a1f27, 90, 190);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  camera.position.set(-46, 16, 24);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(-6, -2, 0); controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.48;
+  scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x203020, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.8); sun.position.set(-30, 50, 20); sun.castShadow = true;
+  sun.shadow.camera.left = -70; sun.shadow.camera.right = 70; sun.shadow.camera.top = 40; sun.shadow.camera.bottom = -40; sun.shadow.mapSize.set(2048, 2048);
+  scene.add(sun);
+  // ground
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(220, 120), new THREE.MeshLambertMaterial({ color: 0x3d4b3a }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = 0; ground.receiveShadow = true; scene.add(ground);
+  const LEN = 80, X0 = -44, WID = 6, DEP = 4;
+  // channel: floor + walls (sunk below ground)
+  const conc = new THREE.MeshLambertMaterial({ color: 0x8c8c86 });
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(LEN, 0.4, WID + 1.2), conc); floor.position.set(X0 + LEN / 2, -DEP - 0.2, 0); scene.add(floor);
+  [-1, 1].forEach(s => { const w = new THREE.Mesh(new THREE.BoxGeometry(LEN, DEP + 0.6, 0.6), conc); w.position.set(X0 + LEN / 2, -DEP / 2 + 0.3, s * (WID / 2 + 0.3)); w.castShadow = true; w.receiveShadow = true; scene.add(w); });
+  // ground cut: dark strip to fake the trench opening
+  const trench = new THREE.Mesh(new THREE.PlaneGeometry(LEN, WID), new THREE.MeshBasicMaterial({ color: 0x0a0f10 })); trench.rotation.x = -Math.PI / 2; trench.position.set(X0 + LEN / 2, -DEP, 0); scene.add(trench);
+  ground.material.depthWrite = true;
+  // hide ground over trench by splitting ground into two strips
+  scene.remove(ground);
+  [-1, 1].forEach(s => { const g = new THREE.Mesh(new THREE.PlaneGeometry(220, 57), new THREE.MeshLambertMaterial({ color: 0x3a4a38 })); g.rotation.x = -Math.PI / 2; g.position.set(0, 0, s * (WID / 2 + 0.6 + 28.5)); g.receiveShadow = true; scene.add(g); });
+  const endStrip = new THREE.Mesh(new THREE.PlaneGeometry(120, WID + 1.2), new THREE.MeshLambertMaterial({ color: 0x3a4a38 })); endStrip.rotation.x = -Math.PI / 2; endStrip.position.set(X0 - 60, 0, 0); scene.add(endStrip);
+  // water surface: segmented plane
+  const SEG = 160;
+  const wgeo = new THREE.PlaneGeometry(LEN, WID, SEG, 1); wgeo.rotateX(-Math.PI / 2); wgeo.translate(X0 + LEN / 2, 0, 0);
+  const cols = new Float32Array(wgeo.attributes.position.count * 3); wgeo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  const water = new THREE.Mesh(wgeo, new THREE.MeshPhongMaterial({ vertexColors: true, transparent: true, opacity: 0.88, shininess: 80 }));
+  scene.add(water);
+  // lake at the end
+  const lake = new THREE.Mesh(new THREE.CircleGeometry(30, 48), new THREE.MeshPhongMaterial({ color: 0x2a6f8f, transparent: true, opacity: 0.9, shininess: 90 }));
+  lake.rotation.x = -Math.PI / 2; lake.position.set(X0 + LEN + 26, 0.05, 0); scene.add(lake);
+  // buildings (deterministic)
+  const rb = rnd(7);
+  const bmat = [0x5a6670, 0x6b7680, 0x4f5a63, 0x77828c].map(c => new THREE.MeshLambertMaterial({ color: c }));
+  for (let i = 0; i < 46; i++) {
+    const side = i % 2 ? 1 : -1; const x = X0 + rb() * LEN; const z = side * (16 + rb() * 34);
+    const h = 2 + rb() * (side > 0 ? 6 : 12), w = 3 + rb() * 5, dpt = 3 + rb() * 5;
+    const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, dpt), bmat[i % 4]); b.position.set(x, h / 2, z); b.castShadow = true; b.receiveShadow = true; scene.add(b);
+  }
+  // road along the drain
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(LEN + 20, 5), new THREE.MeshLambertMaterial({ color: 0x2b2f31 })); road.rotation.x = -Math.PI / 2; road.position.set(X0 + LEN / 2, 0.02, -8); scene.add(road);
+  // flood overlay on road (shows when overflow)
+  const flood = new THREE.Mesh(new THREE.PlaneGeometry(14, 6), new THREE.MeshPhongMaterial({ color: 0x5a7a80, transparent: true, opacity: 0 })); flood.rotation.x = -Math.PI / 2; flood.position.set(0, 0.05, -8); scene.add(flood);
+  // particles in water
+  const PN = 500; const pgeo = new THREE.BufferGeometry(); const ppos = new Float32Array(PN * 3); const pseed = new Float32Array(PN);
+  for (let i = 0; i < PN; i++) { ppos[i * 3] = X0 + Math.random() * LEN; ppos[i * 3 + 2] = (Math.random() - 0.5) * (WID - 0.6); pseed[i] = Math.random(); }
+  pgeo.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+  const parts = new THREE.Points(pgeo, new THREE.PointsMaterial({ color: 0xd9f2ff, size: 0.22, transparent: true, opacity: 0.8 })); scene.add(parts);
+  // rain
+  const RN = 1500; const rgeo = new THREE.BufferGeometry(); const rpos = new Float32Array(RN * 3);
+  for (let i = 0; i < RN; i++) { rpos[i * 3] = (Math.random() - 0.5) * 140; rpos[i * 3 + 1] = Math.random() * 50; rpos[i * 3 + 2] = (Math.random() - 0.5) * 90; }
+  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
+  const rain = new THREE.Points(rgeo, new THREE.PointsMaterial({ color: 0x9fd0ff, size: 0.18, transparent: true, opacity: 0 })); scene.add(rain);
+  // groups rebuilt per drain
+  const dyn = new THREE.Group(); scene.add(dyn);
+  three = { renderer, scene, camera, controls, water, wgeo, lake, parts, pseed, rain, flood, dyn, LEN, X0, WID, DEP, drain: null, labels: [], debris: {}, plumes: [], host };
+  setThreeDrain(threeDrainSel.value || 'KV');
+  const ro = new ResizeObserver(resizeThree); ro.observe(host);
+  resizeThree();
+  animate();
+}
+function resizeThree() {
+  if (!three) return; const w = three.host.clientWidth, h = three.host.clientHeight; if (!w || !h) return;
+  three.renderer.setSize(w, h); three.camera.aspect = w / h; three.camera.updateProjectionMatrix();
+}
+function labelSprite() {
+  const cv = document.createElement('canvas'); cv.width = 320; cv.height = 140;
+  const tex = new THREE.CanvasTexture(cv); const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
+  sp.scale.set(7.2, 3.15, 1); sp.renderOrder = 10;
+  return { sp, cv, tex };
+}
+function drawLabel(L, title, lines, color) {
+  const c = L.cv.getContext('2d'); c.clearRect(0, 0, 320, 140);
+  c.fillStyle = 'rgba(12,37,48,0.92)'; c.strokeStyle = color; c.lineWidth = 4;
+  c.beginPath(); c.roundRect ? c.roundRect(4, 4, 312, 132, 14) : c.rect(4, 4, 312, 132); c.fill(); c.stroke();
+  c.fillStyle = '#ffffff'; c.font = '600 30px IBM Plex Sans, sans-serif'; c.fillText(title, 18, 42);
+  c.font = '24px IBM Plex Mono, monospace'; c.fillStyle = '#cfe3e7'; lines.forEach((l, i) => c.fillText(l, 18, 78 + i * 30));
+  L.tex.needsUpdate = true;
+}
+function nodeX(d, i) { return three.X0 + 4 + (three.LEN - 8) * (i / (d.nodes.length - 1)); }
+function setThreeDrain(id) {
+  if (!three) return;
+  const d = S.drains[id]; three.drain = id;
+  const g = three.dyn; while (g.children.length) g.remove(g.children[0]);
+  three.labels = []; three.debris = {}; three.plumes = [];
+  const T = three;
+  d.nodes.forEach((nd, i) => {
+    const x = nodeX(d, i);
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 5.5), new THREE.MeshLambertMaterial({ color: 0xbfc7cc })); pole.position.set(x, 2.75, T.WID / 2 + 1.0); g.add(pole);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 2.2), new THREE.MeshLambertMaterial({ color: 0xbfc7cc })); arm.position.set(x, 5.4, T.WID / 2 - 0.05); g.add(arm);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.9), new THREE.MeshLambertMaterial({ color: 0x19b3bf })); head.position.set(x, 5.1, 1.6); g.add(head);
+    const solar = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 1.0), new THREE.MeshLambertMaterial({ color: 0x1b2d5a })); solar.position.set(x, 5.75, T.WID / 2 + 1.0); solar.rotation.x = -0.4; g.add(solar);
+    const beam = new THREE.Mesh(new THREE.ConeGeometry(0.9, 5, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0x19b3bf, transparent: true, opacity: 0.12, side: THREE.DoubleSide })); beam.position.set(x, 2.3, 1.6); g.add(beam);
+    const probe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 6), new THREE.MeshLambertMaterial({ color: 0x333333 })); probe.position.set(x + 0.5, -1.2, T.WID / 2 - 0.2); g.add(probe);
+    const L = labelSprite(); L.sp.position.set(x, 9.2, 1.2); g.add(L.sp); L.head = head; L.beam = beam;
+    three.labels.push(L);
+  });
+  // treatment unit (solution A) between last two nodes
+  const xa = nodeX(d, d.nodes.length - 2), xb = nodeX(d, d.nodes.length - 1);
+  if (S.solution === 'A') {
+    const box = new THREE.Mesh(new THREE.BoxGeometry((xb - xa) * 0.55, 2.4, T.WID - 0.2), new THREE.MeshLambertMaterial({ color: 0x6d6a5c, transparent: true, opacity: 0.85 }));
+    box.position.set((xa + xb) / 2, -T.DEP + 1.2, 0); g.add(box);
+    for (let k = 0; k < 26; k++) { const p = new THREE.Mesh(new THREE.ConeGeometry(0.25, 1.6 + Math.random(), 6), new THREE.MeshLambertMaterial({ color: 0x3f9f4f })); p.position.set((xa + xb) / 2 + (Math.random() - 0.5) * (xb - xa) * 0.5, -T.DEP + 2.9, (Math.random() - 0.5) * (T.WID - 1)); g.add(p); }
+    const L = labelSprite(); L.sp.position.set((xa + xb) / 2, 7.5, -2.5); g.add(L.sp); three.treatLabel = L;
+  } else three.treatLabel = null;
+  if (S.solution === 'B') {
+    [0.12, 0.38].forEach(f => { const x = T.X0 + T.LEN * f; [-1, 1].forEach(s => { const bed = new THREE.Mesh(new THREE.BoxGeometry(9, 0.5, 5), new THREE.MeshLambertMaterial({ color: 0x2f7a3a })); bed.position.set(x, 0.25, s * 12); g.add(bed); for (let k = 0; k < 10; k++) { const sh = new THREE.Mesh(new THREE.SphereGeometry(0.6 + Math.random() * 0.4, 8, 6), new THREE.MeshLambertMaterial({ color: 0x4caf50 })); sh.position.set(x + (Math.random() - 0.5) * 8, 0.9, s * 12 + (Math.random() - 0.5) * 4); g.add(sh); } }); });
+  }
+  if (S.solution === 'C') {
+    const tank = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 3, 32), new THREE.MeshLambertMaterial({ color: 0x5d7d8c })); tank.position.set(T.X0 + 6, 1.5, -24); g.add(tank);
+    const tw = new THREE.Mesh(new THREE.CylinderGeometry(6.6, 6.6, 0.1, 32), new THREE.MeshPhongMaterial({ color: 0x2a6f8f })); tw.position.set(T.X0 + 6, 2.2, -24); g.add(tw); three.tankWater = tw;
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 20), new THREE.MeshLambertMaterial({ color: 0x777777 })); pipe.rotation.x = Math.PI / 2; pipe.position.set(T.X0 + 6, 0.3, -12); g.add(pipe);
+  } else three.tankWater = null;
+  // stretch markers for debris and plumes (created hidden)
+  for (let k = 0; k < d.nodes.length - 1; k++) {
+    const xm = (nodeX(d, k) + nodeX(d, k + 1)) / 2;
+    const deb = new THREE.Group();
+    for (let j = 0; j < 22; j++) { const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + Math.random() * 0.6), new THREE.MeshLambertMaterial({ color: [0x5b4a3a, 0x6e5b44, 0x444444, 0x7a6a50][j % 4] })); r.position.set((Math.random() - 0.5) * 3, Math.random() * 2.2, (Math.random() - 0.5) * (T.WID - 0.8)); deb.add(r); }
+    deb.position.set(xm, -T.DEP, 0); deb.visible = false; g.add(deb); three.debris[k] = deb;
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 2.2), new THREE.MeshLambertMaterial({ color: 0x555555 })); pipe.rotation.x = Math.PI / 2; pipe.position.set(xm - 3, -1.2, -T.WID / 2 - 0.4); g.add(pipe);
+    const PN = 120; const geo = new THREE.BufferGeometry(); const pos = new Float32Array(PN * 3); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const pl = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x8a5a2b, size: 0.35, transparent: true, opacity: 0.9 })); pl.visible = false; g.add(pl);
+    three.plumes[k] = { pl, pos, PN, x: xm - 3, t: new Float32Array(PN).map(() => Math.random()) };
+  }
+  document.getElementById('threeInfo').innerHTML = `${esc(d.name)}: ${d.nodes.length} nodes, inlet into Bellandur at the right. Solution shown: <b>${SOLUTIONS[S.solution].name}</b>.`;
+}
+function turbColor(t) {
+  // clean blue -> grey-green -> brown
+  const a = clamp((t - 10) / 260, 0, 1);
+  const c1 = [0.20, 0.55, 0.75], c2 = [0.42, 0.50, 0.38], c3 = [0.45, 0.30, 0.15];
+  const m = a < 0.4 ? a / 0.4 : (a - 0.4) / 0.6; const A = a < 0.4 ? c1 : c2, B = a < 0.4 ? c2 : c3;
+  return A.map((x, i) => x + (B[i] - x) * m);
+}
+let lastFrame = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  if (!three) return;
+  const now = performance.now(); const dt = Math.min(0.05, (now - lastFrame) / 1000); lastFrame = now;
+  if (!document.getElementById('v3d').classList.contains('on')) return;
+  const T = three, d = S.drains[T.drain]; const N = d.nodes.map(n => S.nodes[n[0]]);
+  const xs = d.nodes.map((_, i) => nodeX(d, i));
+  const pos = T.wgeo.attributes.position, col = T.wgeo.attributes.color;
+  const yAt = (x) => { // interpolate level
+    let i = 0; while (i < xs.length - 2 && x > xs[i + 1]) i++;
+    const t = clamp((x - xs[i]) / (xs[i + 1] - xs[i]), 0, 1);
+    const block = d.blocks[i];
+    let lv = N[i].level + (N[i + 1].level - N[i].level) * t;
+    if (block) { const xm = (xs[i] + xs[i + 1]) / 2; lv = x < xm ? N[i].level : N[i + 1].level; }
+    return -T.DEP + (clamp(lv, 2, d.cap) / d.cap) * (T.DEP + 0.3);
+  };
+  const tAt = (x) => { let i = 0; while (i < xs.length - 2 && x > xs[i + 1]) i++; const t = clamp((x - xs[i]) / (xs[i + 1] - xs[i]), 0, 1); return N[i].turb + (N[i + 1].turb - N[i].turb) * t; };
+  for (let v = 0; v < pos.count; v++) {
+    const x = pos.getX(v); const y = yAt(x) + Math.sin(x * 1.3 + now / 400) * 0.03; pos.setY(v, y);
+    const c = turbColor(tAt(x)); col.setXYZ(v, c[0], c[1], c[2]);
+  }
+  pos.needsUpdate = true; col.needsUpdate = true; T.wgeo.computeVertexNormals();
+  // lake colour from inlet node
+  const lc = turbColor(N[N.length - 1].turb * 0.8); T.lake.material.color.setRGB(lc[0], lc[1], lc[2]);
+  // particles flow
+  const pp = T.parts.geometry.attributes.position;
+  for (let i = 0; i < pp.count; i++) {
+    let x = pp.getX(i); let k = 0; while (k < xs.length - 2 && x > xs[k + 1]) k++;
+    const blocked = d.blocks[k] && x > (xs[k] + xs[k + 1]) / 2 - 2 && x < (xs[k] + xs[k + 1]) / 2;
+    const speed = blocked ? 0.2 : 3 + N[k].level / 25;
+    x += speed * dt * (0.6 + T.pseed[i]);
+    if (x > T.X0 + T.LEN) x = T.X0;
+    pp.setX(i, x); pp.setY(i, yAt(x) + 0.05);
+  }
+  pp.needsUpdate = true;
+  // debris + plumes
+  Object.entries(T.debris).forEach(([k, g]) => { const sev = d.blocks[k] || 0; g.visible = sev > 0; g.scale.setScalar(0.4 + sev * 0.8); });
+  T.plumes.forEach((p, k) => {
+    const on = d.dumps[k] || d.sewage[k]; p.pl.visible = !!on; if (!on) return;
+    p.pl.material.color.setHex(d.dumps[k] ? (d.dumps[k].industrial ? 0x8e44ad : 0x8a5a2b) : 0x9a7b3a);
+    for (let i = 0; i < p.PN; i++) { p.t[i] += dt * 0.6; if (p.t[i] > 1) p.t[i] = 0; const tt = p.t[i]; p.pos[i * 3] = p.x + tt * 3 + (Math.random() - 0.5) * 0.3; p.pos[i * 3 + 1] = -1.2 - tt * 1.8; p.pos[i * 3 + 2] = -T.WID / 2 + 0.6 + tt * 2.5; }
+    p.pl.geometry.attributes.position.needsUpdate = true;
+  });
+  // rain
+  const raining = S.rain > 0.5; T.rain.material.opacity = raining ? clamp(S.rain / 25, 0.25, 0.8) : 0;
+  if (raining) { const rp = T.rain.geometry.attributes.position; for (let i = 0; i < rp.count; i++) { let y = rp.getY(i) - 40 * dt; if (y < 0) y = 50; rp.setY(i, y); } rp.needsUpdate = true; }
+  // flood on road when any node > 85%
+  const over = N.some(n => n.level > 0.85 * d.cap); T.flood.material.opacity += ((over ? 0.6 : 0) - T.flood.material.opacity) * 0.05;
+  const oi = N.findIndex(n => n.level > 0.85 * d.cap); if (oi >= 0) T.flood.position.x = xs[oi];
+  if (T.tankWater) T.tankWater.position.y = 0.2 + clamp(S.rainEff / 10, 0, 1) * 2.6;
+  // labels every ~0.5s
+  if (!T._lt || now - T._lt > 500) {
+    T._lt = now;
+    N.forEach((n, i) => {
+      const al = S.alerts.find(a => a.status !== 'RESOLVED' && a.drain === d.id && (a.a === i || a.b === i) && a.type !== 'SKY');
+      const c = al ? TYPE[al.type].color : '#19b3bf';
+      drawLabel(T.labels[i], `${n.id}${n.source === 'LIVE' ? ' · LIVE' : ''}`, [`Level ${fmt(n.level)} cm`, `Turb ${fmt(n.turb)} NTU`], c);
+      T.labels[i].head.material.color.set(c); T.labels[i].beam.material.color.set(c);
+    });
+    if (T.treatLabel) { const a = N[N.length - 2], b = N[N.length - 1]; drawLabel(T.treatLabel, 'Inlet biofilter', [`Removed ${fmt((a.turb - b.turb) / Math.max(1, a.turb) * 100)}%`, `${fmt(a.turb)} → ${fmt(b.turb)} NTU`], '#3fbf6f'); }
+  }
+  T.controls.update();
+  T.renderer.render(T.scene, T.camera);
+}
+
+// ---------- Scenario controls ----------
+function scDrain() { return document.getElementById('scDrain').value; }
+function pickStretch(d, avoidLast = true) { const max = d.nodes.length - (avoidLast ? 2 : 1); return Math.floor(Math.random() * max); }
+function bindScenarios() {
+  const sel = document.getElementById('scDrain');
+  sel.innerHTML = DRAINS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  threeDrainSel.innerHTML = sel.innerHTML;
+  threeDrainSel.onchange = () => setThreeDrain(threeDrainSel.value);
+  document.getElementById('scBlock').onclick = () => { const d = S.drains[scDrain()]; const k = pickStretch(d); d.blocks[k] = 0.15; addLog('OPS', `Demo: blockage started between ${d.nodes[k][0]} and ${d.nodes[k + 1][0]}`); toast('Blockage injected. Watch the level rise upstream.'); };
+  document.getElementById('scDump').onclick = () => { const d = S.drains[scDrain()]; const k = pickStretch(d); d.dumps[k] = { industrial: true }; addLog('OPS', `Demo: industrial dumping started between ${d.nodes[k][0]} and ${d.nodes[k + 1][0]}`); toast('Dumping injected.'); };
+  document.getElementById('scSewage').onclick = () => { const d = S.drains[scDrain()]; const k = pickStretch(d); d.sewage[k] = true; addLog('OPS', `Demo: sewage leak started between ${d.nodes[k][0]} and ${d.nodes[k + 1][0]}`); toast('Sewage leak injected.'); };
+  document.getElementById('scRain').onclick = () => { S.scenarioRain = 32; addLog('OPS', 'Demo: heavy rain, 32 mm/h over the catchment'); toast('Heavy rain started.'); };
+  document.getElementById('scFault').onclick = () => { const d = S.drains[scDrain()]; const k = Math.floor(Math.random() * (d.nodes.length - 1)); const n = S.nodes[d.nodes[k][0]]; n.stuck = true; addLog('OPS', `Demo: sensor ${n.id} frozen`); toast(`Sensor ${n.id} frozen.`); };
+  document.getElementById('scPass').onclick = () => { satellitePass(true); renderAll(); };
+  document.getElementById('scReset').onclick = () => { Object.values(S.drains).forEach(d => { d.blocks = {}; d.dumps = {}; d.sewage = {}; d.treatHealth = 1; }); Object.values(S.nodes).forEach(n => n.stuck = null); S.scenarioRain = 0; addLog('OPS', 'Demo: all scenarios reset'); toast('Scenarios reset.'); };
+  const sp = document.getElementById('speed');
+  sp.innerHTML = [1, 5, 15, 30].map(v => `<button data-s="${v}" class="${S.speed === v ? 'on' : ''}">${v}×</button>`).join('');
+  sp.querySelectorAll('button').forEach(b => b.onclick = () => { S.speed = +b.dataset.s; store.set('speed', S.speed); sp.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('speedTxt').textContent = S.speed; });
+  document.getElementById('speedTxt').textContent = S.speed;
+}
+
+// ---------- Left panel ----------
+function renderLeft() {
+  const ds = document.getElementById('deptSel');
+  ds.innerHTML = `<option value="ALL">All departments (command view)</option>` + Object.entries(DEPTS).map(([k, d]) => `<option value="${k}">${d.name}</option>`).join('');
+  ds.value = S.dept; ds.onchange = () => setDept(ds.value);
+  renderSols();
+  document.getElementById('layers').innerHTML = LAYER_DEFS.map(([k, label, c]) => `<label class="toggle"><input type="checkbox" data-l="${k}" ${layerOn[k] ? 'checked' : ''}><span class="swatch" style="background:${c}"></span>${label}</label>`).join('');
+  document.querySelectorAll('#layers input').forEach(i => i.onchange = () => { const k = i.dataset.l; layerOn[k] = i.checked; store.set('layers', layerOn); if (i.checked) L_layers[k].addTo(map); else map.removeLayer(L_layers[k]); });
+}
+function renderSols() {
+  document.getElementById('sols').innerHTML = Object.entries(SOLUTIONS).map(([k, s]) => `<button class="sol ${S.solution === k ? 'on' : ''}" data-s="${k}"><span class="tag">${s.tag}</span><b>${k}. ${s.name}</b><span>${s.desc}</span></button>`).join('') +
+    `<div class="note" id="solStats" style="margin-top:4px"></div>`;
+  document.querySelectorAll('.sol').forEach(b => b.onclick = () => { S.solution = b.dataset.s; store.set('solution', S.solution); renderSols(); renderSolutionLayer(); setThreeDrain(three ? three.drain : 'KV'); addLog('OPS', `View switched to solution ${S.solution}: ${SOLUTIONS[S.solution].name}`); renderAll(); });
+}
+function renderSolStats() {
+  const el = document.getElementById('solStats'); if (!el) return;
+  if (S.solution === 'A') { const effs = DRAINS.map(d => { const a = S.nodes[d.nodes.at(-2)[0]], b = S.nodes[d.nodes.at(-1)[0]]; return (a.turb - b.turb) / Math.max(1, a.turb); }); el.innerHTML = `4 inlet units · turbidity removed now: ${effs.map(e => fmt(e * 100) + '%').join(', ')}`; }
+  if (S.solution === 'B') el.innerHTML = `5 sponge zones · about 42% of runoff held, peak delayed (simulated). Trigger heavy rain to compare with A.`;
+  if (S.solution === 'C') el.innerHTML = `3 virtual lakes · hold about 30% of runoff when drains run high. Roadmap item, model only.`;
+}
+
+// ---------- Modals ----------
+function modal(html) { document.getElementById('modalBox').innerHTML = html + '<div style="text-align:right;margin-top:16px"><button class="btn primary" onclick="closeModal()">Close</button></div>'; document.getElementById('modal').classList.add('on'); }
+window.closeModal = () => document.getElementById('modal').classList.remove('on');
+document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal') closeModal(); };
+function aboutModal() {
+  modal(`<h2>How Smart Rajakaluve works</h2><p>One system that finds, locates and treats drain flooding and lake pollution in the Bellandur catchment. All agencies work from the same live picture.</p>
+  <h4>1. Detect · Sentinel-2 sky view</h4><p>Every clear satellite pass maps lake turbidity (NDTI). The inlet with the dirtiest water nearby is checked first.</p>
+  <h4>2. Locate · sensor nodes on the drains</h4><p>Nodes at drain junctions read water level, turbidity, TDS, pH and temperature every few minutes. The software compares neighbours:</p>
+  <ul><li><b>Blockage:</b> level high at one node and low at the next → silt or debris between them → GBA desilting crew.</li><li><b>Industrial discharge:</b> turbidity or TDS jumps and pH goes out of range → KSPCB inspection.</li><li><b>Sewage leak:</b> TDS jumps with neutral pH → BWSSB sewer repair, KSPCB informed.</li><li><b>Overflow risk:</b> level above 85% of depth → pumps and barricades.</li></ul>
+  <h4>3. Treat · biofilter at each lake inlet</h4><p>A gravel, sand and plant filter cleans the water still flowing in. Nodes before and after it measure the turbidity removed; a drop in removal tells KTCDA to clean the media.</p>
+  <h4>Every alert has an owner and steps</h4><p>Alerts route to the responsible department, which moves them through acknowledge, dispatch and close. Each step is time-stamped in the activity log, so response times are measured.</p>
+  <h4>Detection thresholds (tunable in the backend)</h4>
+  <table><tr><th>Rule</th><th>Trigger</th><th>Routed to</th></tr>
+  <tr><td>Blockage</td><td>Upstream level &gt; ${RULES.blockMinLevel} cm and downstream/upstream &lt; ${RULES.blockRatio}</td><td>GBA</td></tr>
+  <tr><td>Overflow risk</td><td>Level &gt; ${RULES.overflowFrac * 100}% of drain depth</td><td>GBA</td></tr>
+  <tr><td>Pollution jump</td><td>Turbidity +${RULES.turbJump} NTU or TDS +${RULES.tdsJump} ppm between neighbours</td><td>KSPCB (pH out of ${RULES.phLow}–${RULES.phHigh}) or BWSSB + KSPCB</td></tr>
+  <tr><td>Treatment</td><td>Turbidity removed &lt; ${RULES.treatMin * 100}%</td><td>KTCDA</td></tr>
+  <tr><td>Sensor fault</td><td>No change for ${RULES.stuckTicks} readings</td><td>Operations</td></tr></table>
+  <p class="note">Every rule must hold for ${RULES.persist} readings in a row, which stops one noisy reading from raising an alert.</p>`);
+}
+function settingsModal() {
+  const nodes = Object.values(S.nodes); const live = nodes.filter(n => n.source === 'LIVE').length;
+  modal(`<h2>Data sources and reliability</h2>
+  <table><tr><th>Feed</th><th>Now</th><th>In deployment</th></tr>
+  <tr><td>Sensor nodes</td><td>${S.live ? `<b style="color:var(--green)">Live</b> · ${live} nodes from backend, rest simulated` : 'Simulated (same data format as hardware)'}</td><td>ESP32 nodes post JSON over LoRa gateway or GSM to the backend every 2–5 minutes</td></tr>
+  <tr><td>Weather</td><td>${S.wxLive ? '<b style="color:var(--green)">Open-Meteo live</b>' : 'Sample data (network blocked in this preview)'}</td><td>Open-Meteo forecast API, refreshed every 15 minutes; IMD or KSNDMC feeds can be added</td></tr>
+  <tr><td>Sky view</td><td>${S.live && S.sky?.source?.includes('Sentinel') ? 'Backend NDTI' : 'Simulated pass from inlet loads'}</td><td>Sentinel-2 L2A from Microsoft Planetary Computer, NDTI computed per clear pass by the sentinel script</td></tr>
+  <tr><td>Base map</td><td>${S.tilesOK ? 'OpenStreetMap / Sentinel-2 cloudless tiles' : 'Schematic shapes (tiles blocked in preview)'}</td><td>OpenStreetMap plus surveyed drain alignments from GBA</td></tr></table>
+  <h4>Connect to a live backend</h4>
+  <p>Run <span class="mono">server/app.py</span> and open <span class="mono">http://&lt;server&gt;:8000</span>; the app switches to live mode by itself. Or enter the backend address here:</p>
+  <div style="display:flex;gap:6px"><input type="text" id="apiIn" placeholder="http://192.168.1.20:8000" value="${esc(S.apiBase)}" style="flex:1"><button class="btn primary" onclick="saveApi()">Connect</button></div>
+  <p class="note" id="apiMsg">${S.live ? 'Connected to ' + esc(S.liveBase || location.origin) : 'Not connected.'}</p>
+  <h4>Why the readings can be trusted</h4><ul>
+  <li>Alerts need ${RULES.persist} readings in a row, and use two neighbouring nodes, so one bad sensor cannot raise a pollution or blockage alert alone.</li>
+  <li>Frozen sensors are detected and routed to operations.</li>
+  <li>Ultrasonic level sensors never touch the water; quality probes sit behind a guard mesh and are cleaned on a schedule.</li>
+  <li>The satellite only chooses where to look; ground nodes confirm before enforcement.</li></ul>`);
+}
+window.saveApi = async () => { S.apiBase = document.getElementById('apiIn').value.trim(); store.set('api', S.apiBase); document.getElementById('apiMsg').textContent = 'Connecting…'; const ok = await probeLive(); document.getElementById('apiMsg').textContent = ok ? 'Connected. Live readings now override simulated nodes.' : 'Could not reach that address. Check the server is running and allows this origin (CORS).'; setModeBadge(); };
+
+function toast(html) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.innerHTML = html; t.prepend(d); setTimeout(() => d.remove(), 5000); while (t.children.length > 3) t.lastChild.remove(); }
+function setModeBadge() { const b = document.getElementById('modeBadge'); b.className = 'badge ' + (S.live ? 'live' : 'sim'); b.textContent = S.live ? 'LIVE + SIM' : 'SIMULATION'; }
+
+// ---------- Tabs ----------
+function switchTab(v) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.v === v));
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === v));
+  if (v === 'vMap' && map) setTimeout(() => map.invalidateSize(), 50);
+  if (v === 'v3d') { if (!three) initThree(); else setTimeout(resizeThree, 30); }
+  if (v === 'vTrend') renderTrends();
+  if (location.hash !== '#' + v) try { history.replaceState(null, '', '#' + v); } catch (e) {}
+}
+window.switchTab = switchTab;
+function showRight(r) { document.querySelectorAll('.rtabs button').forEach(b => b.classList.toggle('on', b.dataset.r === r)); document.querySelectorAll('.rview').forEach(v => v.classList.toggle('on', v.id === r)); }
+window.showRight = showRight;
+window.satellitePass = satellitePass; window.loadWeather = loadWeather;
+
+// ---------- Render ----------
+function renderAll() {
+  renderKPIs(); renderAlerts(); renderLog(); renderDeptSummary(); renderSolStats(); updateMapStyles();
+  if (document.getElementById('rDetail').classList.contains('on')) renderDetail();
+  if (document.getElementById('rSky').classList.contains('on')) renderSkyPanel();
+  if (document.getElementById('rWx').classList.contains('on')) renderWeather();
+}
+
+// ---------- Main loop ----------
+function tick() {
+  S.t = S.live ? Date.now() : S.t + 60000 * S.speed;
+  S.tick++;
+  const steps = Math.min(S.speed, 30);
+  for (let i = 0; i < steps; i++) { simStep(); recordHist(); if (i === steps - 1 || i % 3 === 0) detect(); }
+  if (S.tick % 3 === 0) pollLive();
+  if (S.tick % 900 === 0) loadWeather();
+  if (S.tick % 600 === 0) satellitePass(false);
+  renderAll();
+  if (document.getElementById('vTrend').classList.contains('on') && S.tick % 2 === 0) renderTrends();
+  document.getElementById('clock').textContent = new Date(S.t).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }) + ' IST';
+}
+function recordHist() {
+  Object.values(S.nodes).forEach(n => { const h = S.hist[n.id]; h.push({ level: n.level, turb: n.turb, tds: n.tds, ph: n.ph }); if (h.length > 120) h.shift(); });
+}
+
+// ---------- Boot ----------
+(async function boot() {
+  document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchTab(t.dataset.v));
+  document.querySelectorAll('.rtabs button').forEach(b => b.onclick = () => { showRight(b.dataset.r); renderAll(); });
+  document.getElementById('btnAbout').onclick = aboutModal;
+  document.getElementById('btnSettings').onclick = settingsModal;
+  bindScenarios();
+  initMap();
+  renderLeft();
+  renderSolutionLayer();
+  S.weather = sampleWeather();
+  for (let i = 0; i < 30; i++) { simStep(); recordHist(); }
+  satellitePass(false);
+  addLog('OPS', `Command centre started. ${Object.keys(S.nodes).length} nodes on ${DRAINS.length} drains feeding Bellandur Lake.`);
+  renderAll(); renderWeather(); renderDetail();
+  setInterval(tick, 1000);
+  loadWeather();
+  if (await probeLive()) { setModeBadge(); addLog('OPS', 'Connected to live backend'); }
+  const h = location.hash.slice(1); if (['vMap', 'v3d', 'vTrend'].includes(h)) switchTab(h);
+})();
+</script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,80 @@
+{
+  "_note": "Map each physical node to a dashboard node. The hackathon gutter rig (A, B, C, filter box, D) stands in for the Agara-HSR drain (AG-1, AG-2, AG-3, treatment, AG-T). level_scale converts rig centimetres to full-size drain centimetres (gutter 10 cm deep vs drain 140 cm => 14).",
+  "hardware_map": {
+    "NODE-A": {
+      "node_id": "AG-1",
+      "mount_height_cm": 30,
+      "level_scale": 14
+    },
+    "NODE-B": {
+      "node_id": "AG-2",
+      "mount_height_cm": 30,
+      "level_scale": 14
+    },
+    "NODE-C": {
+      "node_id": "AG-3",
+      "mount_height_cm": 30,
+      "level_scale": 14
+    },
+    "NODE-D": {
+      "node_id": "AG-T",
+      "mount_height_cm": 30,
+      "level_scale": 14
+    }
+  },
+  "drains": [
+    {
+      "id": "KV",
+      "cap": 160,
+      "nodes": [
+        "KV-1",
+        "KV-2",
+        "KV-3",
+        "KV-4",
+        "KV-T"
+      ]
+    },
+    {
+      "id": "AG",
+      "cap": 140,
+      "nodes": [
+        "AG-1",
+        "AG-2",
+        "AG-3",
+        "AG-T"
+      ]
+    },
+    {
+      "id": "IB",
+      "cap": 130,
+      "nodes": [
+        "IB-1",
+        "IB-2",
+        "IB-3",
+        "IB-T"
+      ]
+    },
+    {
+      "id": "CH",
+      "cap": 140,
+      "nodes": [
+        "CH-1",
+        "CH-2",
+        "CH-3",
+        "CH-T"
+      ]
+    }
+  ],
+  "rules": {
+    "blockRatio": 0.55,
+    "blockMinLevel": 55,
+    "overflowFrac": 0.85,
+    "turbJump": 70,
+    "tdsJump": 300,
+    "phLow": 6.0,
+    "phHigh": 9.0,
+    "treatMin": 0.4,
+    "persist": 2,
+    "stuckTicks": 6
+  }
+}
